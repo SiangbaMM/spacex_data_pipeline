@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: spd_launches_dev
+    tables:
+      - name: launches
+      - name: rocket
+
