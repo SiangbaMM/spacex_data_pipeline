@@ -10,11 +10,14 @@ Here is our agenda :
 
 - Set up your environment: Install Python and essential tools.
 - Learn Git and GitHub: Create a repository for your project.
-- Refresh Python basics: Get comfortable with coding.
 - Build the pipeline: Extract SpaceX data using Singer and Pandas.
 - Load data into Snowflake: Store your raw data securely.
 - Transform data with dbt: Clean and organise your data.
 - Analyse data using SQL: Find insights in the launch data.
+
+2. Data orchestration
+
+- Install and run Airflow
 
 2. API
 
@@ -23,12 +26,13 @@ Here is our agenda :
 
 3. Local Deployment
 
-- Using Docker
+- Install and run the scheduled pipeline via Docker
 
-4. Move to cloud
+4. Cloud deployment on Azure
 
-- Azure
+- To be defined
 
-# Contact
+# FAQ's
 
-This is my first side project. To report a bug or suggest a change, let me know with a PR..
+- If you have any questions or corrections, please open an issue and I'll get it merged ASAP
+- For any other questions or concerns, just shoot me an email..
