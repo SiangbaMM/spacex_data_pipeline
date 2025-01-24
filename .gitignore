@@ -1,2 +1,6 @@
 .git
 .venv
+.vscode
+config.json
+target-snowflake--*
+logs
