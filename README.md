@@ -19,18 +19,22 @@ Here is our agenda :
 
 - Install and run Airflow
 
-2. API
+2. Visualization
 
-- Using Flask
-- Using FastAPI
+- Using Streamlit
+- Using Power BI
 
-3. Local Deployment
+3. CI/CD
 
-- Install and run the scheduled pipeline via Docker
+- Learn and use GitHub Action and Schemachange for Snowflake
 
-4. Cloud deployment on Azure
+4. Deployment
+- Local
+>- Install and run the scheduled pipeline via Docker
+- Cloud
+>- To be defined
 
-- To be defined
+
 
 # FAQ's
 
