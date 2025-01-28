@@ -246,7 +246,7 @@ erDiagram
         timestamp updated_at
     }
 
-    DIM_LAUNCHPADS {
+	DIM_LAUNCHPADS {
         int launchpad_key PK
         string launchpad_id
         string name
@@ -262,12 +262,12 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
-
     FACT_LAUNCHES {
         int launch_key PK
         string launch_id
         int date_key FK
         int rocket_key FK
+        int dragon_key FK
         int launchpad_key FK
         boolean success
         variant failures
@@ -277,6 +277,19 @@ erDiagram
         variant capsules
         variant payloads
         variant cores
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BRIDGE_LAUNCH_DRAGONS {
+        int launch_key PK,FK
+        int dragon_key PK,FK
+        int capsule_key FK
+        string mission_type
+        float cargo_mass_kg
+        int crew_count
+        timestamp docking_date
+        timestamp undocking_date
         timestamp created_at
         timestamp updated_at
     }
@@ -298,7 +311,7 @@ erDiagram
         timestamp updated_at
     }
 
-    FACT_STARLINK {
+	FACT_STARLINK {
         int starlink_key PK
         string starlink_id
         int launch_key FK
@@ -315,6 +328,9 @@ erDiagram
     DIM_COMPANY ||--o{ DIM_ROCKETS : "has"
     DIM_COMPANY ||--o{ DIM_DRAGONS : "has"
     FACT_LAUNCHES }|--|| DIM_ROCKETS : "uses"
+    FACT_LAUNCHES }|--|| DIM_DRAGONS : "uses"
+    FACT_LAUNCHES ||--o{ BRIDGE_LAUNCH_DRAGONS : "tracks"
+    DIM_DRAGONS ||--o{ BRIDGE_LAUNCH_DRAGONS : "missions"
     FACT_LAUNCHES }|--|| DIM_LAUNCHPADS : "launches_from"
     FACT_LAUNCHES ||--|{ FACT_PAYLOADS : "carries"
     FACT_LAUNCHES ||--|{ FACT_STARLINK : "deploys"
