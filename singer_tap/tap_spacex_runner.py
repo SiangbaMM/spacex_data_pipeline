@@ -204,7 +204,7 @@ def main():
         logger.info("First set completed successfully")
 
         # Sleep
-        logger.info("\n\n===================================\n\n")
+        logger.info("\n\n=================================================================================================\n\n")
         time.sleep(5)
 
         # Run second set
@@ -213,7 +213,7 @@ def main():
         logger.info("Second set completed successfully")
         
         # Sleep
-        logger.info("\n\n===================================\n\n")
+        logger.info("\n\n=================================================================================================\n\n")
         time.sleep(5)
         
         # Run third set
