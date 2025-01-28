@@ -5,3 +5,4 @@ config*
 target-snowflake--*
 logs
 training/
+__pycache__/
