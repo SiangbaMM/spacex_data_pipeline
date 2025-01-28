@@ -1,0 +1,10 @@
+
+{
+    "account": "**MUST_BE_CHANGED**",
+    "user": "SPACEX_DATA_DEV_LOAD_USER",
+    "password": "**MUST_BE_CHANGED**",
+    "database": "SPACEX_DATA_DEV",
+    "role": "SPACEX_DATA_DEV_LOAD_ROLE",
+    "warehouse": "SPACEX_DATA_DEV_LOAD_WH",
+    "schema": "STG_SPACEX_DATA"
+}

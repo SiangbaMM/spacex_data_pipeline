@@ -1,0 +1,10 @@
+
+{
+    "account": "zj22246.uk-south.azure",
+    "user": "SPACEX_DATA_DEV_LOAD_USER",
+    "password": "Esp@daSinger1",
+    "database": "SPACEX_DATA_DEV",
+    "role": "SPACEX_DATA_DEV_LOAD_ROLE",
+    "warehouse": "SPACEX_DATA_DEV_LOAD_WH",
+    "schema": "STG_SPACEX_DATA"
+}
