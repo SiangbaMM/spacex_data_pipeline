@@ -201,10 +201,9 @@ graph TD
 3. **Error Handling**
    ```sql
    CREATE TABLE LOAD_ERRORS (
-       ERROR_ID INT IDENTITY(1,1),
        TABLE_NAME STRING,
        ERROR_MESSAGE STRING,
-       ERROR_DATA VARIANT,
+       ERROR_DATA STRING,
        ERROR_TIME TIMESTAMP_NTZ
    );
    ```

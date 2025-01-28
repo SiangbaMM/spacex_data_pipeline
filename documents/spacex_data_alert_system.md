@@ -21,12 +21,12 @@ SELECT
     -- Completeness
     (SELECT COUNT(*)
      FROM FACT_LAUNCHES
-     WHERE ROCKET_KEY IS NULL) as missing_rocket_count,
+     WHERE ROCKET_ID IS NULL) as missing_rocket_count,
 
     -- Consistency
     (SELECT COUNT(*)
      FROM FACT_LAUNCHES l
-     JOIN DIM_ROCKETS r ON l.ROCKET_KEY = r.ROCKET_KEY
+     JOIN DIM_ROCKETS r ON l.ROCKET_ID = r.ROCKET_ID
      WHERE l.DATE_UTC < r.FIRST_FLIGHT) as invalid_date_count,
 
     -- Accuracy
@@ -122,7 +122,7 @@ BEGIN
         'Missing rocket references: ' || COUNT(*),
         'HIGH'
     FROM FACT_LAUNCHES
-    WHERE ROCKET_KEY IS NULL;
+    WHERE ROCKET_ID IS NULL;
 
     -- Check for data freshness
     INSERT INTO ALERT_LOG (ALERT_TYPE, ALERT_MESSAGE, SEVERITY)

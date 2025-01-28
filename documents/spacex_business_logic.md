@@ -17,7 +17,7 @@
    -- All launches must have a rocket
    ALTER TABLE FACT_LAUNCHES
    ADD CONSTRAINT CHK_LAUNCH_ROCKET
-   CHECK (ROCKET_KEY IS NOT NULL);
+   CHECK (ROCKET_ID IS NOT NULL);
 
    -- Launch dates must be after company founding
    ALTER TABLE FACT_LAUNCHES
@@ -96,7 +96,7 @@ BEGIN
             SUM(CASE WHEN l.SUCCESS THEN 1 ELSE 0 END)::FLOAT / COUNT(*) as success_rate,
             1 - (1 / (1 + SQRT(COUNT(*)))) as confidence_level
         FROM FACT_LAUNCHES l
-        JOIN DIM_ROCKETS r ON l.ROCKET_KEY = r.ROCKET_KEY
+        JOIN DIM_ROCKETS r ON l.ROCKET_ID = r.ROCKET_ID
         GROUP BY r.NAME
         HAVING COUNT(*) >= 5
     );

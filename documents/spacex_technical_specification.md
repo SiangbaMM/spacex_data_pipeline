@@ -36,15 +36,15 @@
 ```sql
 -- Launches fact table clustering
 ALTER TABLE FACT_LAUNCHES
-CLUSTER BY (DATE_KEY, ROCKET_KEY);
+CLUSTER BY (DATE_ID, ROCKET_ID);
 
 -- Payloads fact table clustering
 ALTER TABLE FACT_PAYLOADS
-CLUSTER BY (LAUNCH_KEY);
+CLUSTER BY (LAUNCH_ID);
 
 -- Starlink fact table clustering
 ALTER TABLE FACT_STARLINK
-CLUSTER BY (LAUNCH_KEY, LATITUDE, LONGITUDE);
+CLUSTER BY (LAUNCH_ID, LATITUDE, LONGITUDE);
 ```
 
 #### Materialized Views
@@ -58,7 +58,7 @@ SELECT
     SUM(CASE WHEN l.SUCCESS = TRUE THEN 1 ELSE 0 END) as successful_launches,
     (successful_launches / total_launches * 100)::NUMERIC(5,2) as success_rate
 FROM FACT_LAUNCHES l
-JOIN DIM_ROCKETS r ON l.ROCKET_KEY = r.ROCKET_KEY
+JOIN DIM_ROCKETS r ON l.ROCKET_ID = r.ROCKET_ID
 GROUP BY r.NAME;
 
 -- Active satellites by version
@@ -78,10 +78,10 @@ GROUP BY VERSION;
 
 ```sql
 -- Primary Keys
-[table_name]_KEY        INT IDENTITY(1,1)
+[table_name]_ID        INT IDENTITY(1,1)
 
 -- Foreign Keys
-[dimension_name]_KEY    INT NOT NULL
+[dimension_name]_ID    INT NOT NULL
 
 -- Dates and Times
 [event_name]_DATE       DATE
@@ -93,7 +93,7 @@ GROUP BY VERSION;
 PERCENTAGE              NUMBER(5,2)
 
 -- Text
-NAME                    VARCHAR(100)
+NAME                   VARCHAR(100)
 DESCRIPTION            VARCHAR(1000)
 URL                    VARCHAR(500)
 ```
