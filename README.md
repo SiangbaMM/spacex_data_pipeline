@@ -13,11 +13,11 @@ Here is our agenda :
 - Build the pipeline: Extract SpaceX data using Singer and Pandas.
 - Load data into Snowflake: Store your raw data securely.
 - Transform data with dbt: Clean and organise your data.
-- Analyse data using SQL: Find insights in the launch data.
+- Analyse data using SQL: Find insights in SpaceX data.
 
 2. Data orchestration
 
-- Install and run Airflow
+- Install and run Apache Airflow
 
 2. Visualization
 
@@ -26,7 +26,7 @@ Here is our agenda :
 
 3. CI/CD
 
-- Learn and use GitHub Action and Schemachange for Snowflake
+- Learn and use GitHub Action and Schemachange for Snowflake deployment
 
 4. Deployment
 - Local
@@ -39,4 +39,4 @@ Here is our agenda :
 # FAQ's
 
 - If you have any questions or corrections, please open an issue and I'll get it merged ASAP
-- For any other questions or concerns, just shoot me an email..
+- For any other questions or concerns, just shoot me a message on [LinkedIn](https://www.linkedin.com/in/siangbamangamabada/)
