@@ -10,8 +10,6 @@ class LandpadsTap(SpaceXTapBase):
         """
         Fetch and process landpads data from SpaceX API with Snowflake-compatible schema.
         
-        Args:
-            base_url (str): Base URL for the SpaceX API
         """
         
         stream_name = "STG_SPACEX_DATA_LANDPADS"
@@ -87,7 +85,8 @@ class LandpadsTap(SpaceXTapBase):
                     "UPDATED_AT": {
                         "type": ["string", "null"],
                         "format": "date-time"
-                    }
+                    },
+                    "RAW_DATA": {"type": ["string", "null"]}
                 }
             }
         
@@ -131,7 +130,8 @@ class LandpadsTap(SpaceXTapBase):
                         "LAUNCHES": json.dumps(landpad.get("launches", [])),
                         "IMAGES": json.dumps(images),
                         "CREATED_AT": current_time_str,
-                        "UPDATED_AT": current_time_str
+                        "UPDATED_AT": current_time_str,
+                        "RAW_DATA": json.dumps(landpad)
                     }
             
                     # Write record with timezone-aware timestamp

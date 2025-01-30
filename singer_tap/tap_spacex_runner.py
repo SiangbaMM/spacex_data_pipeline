@@ -6,8 +6,10 @@ from include.fetch_capsules import CapsulesTap
 from include.fetch_cores import CoresTap
 from include.fetch_crew import CrewTap
 from include.fetch_dragons import DragonsTap
+from include.fetch_landpads import LandpadsTap
 from include.fetch_launches import LaunchesTap
 from include.fetch_launchpads import LaunchpadsTap
+from include.fetch_history import HistoryTap
 from include.fetch_payloads import PayloadsTap
 from include.fetch_roadster import RoadsterTap
 from include.fetch_rockets import RocketsTap
@@ -69,6 +71,14 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
             dragons_tap.close_connection()
 
     # Second set of functions - Mission and location data
+    def fetch_landpads(self):
+        logger.info("Fetching landpads data")
+        landpads_tap = LandpadsTap(self.base_url, self.config_path)
+        try:
+            landpads_tap.fetch_landpads()
+        finally:
+            landpads_tap.close_connection()
+      
     def fetch_launches(self):
         logger.info("Fetching launches data")
         launches_tap = LaunchesTap(self.base_url, self.config_path)
@@ -84,6 +94,14 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
             launchpads_tap.fetch_launchpads()
         finally:
             launchpads_tap.close_connection()
+    
+    def fetch_history(self):
+        logger.info("Fetching history data")
+        history_tap = HistoryTap(self.base_url, self.config_path)
+        try:
+            history_tap.fetch_history()
+        finally:
+            history_tap.close_connection()
 
     def fetch_payloads(self):
         logger.info("Fetching payloads data")
@@ -134,7 +152,8 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
             self.fetch_company,
             self.fetch_capsules,
             self.fetch_cores,
-            self.fetch_crew
+            self.fetch_crew,
+            self.fetch_dragons
         ]
 
         for func in first_set_functions:
@@ -152,9 +171,10 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         logger.info("Starting second set of functions...")
         
         second_set_functions = [
-            self.fetch_dragons,
+            self.fetch_history,
             self.fetch_launches,
             self.fetch_launchpads,
+            self.fetch_landpads,
             self.fetch_payloads
         ]
 
@@ -203,7 +223,7 @@ def main():
         orchestrator.run_first_set()
         logger.info("First set completed successfully")
 
-        # Sleep
+        ## Sleep
         logger.info("\n\n=================================================================================================\n\n")
         time.sleep(5)
 
