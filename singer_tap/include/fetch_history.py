@@ -8,9 +8,7 @@ class HistoryTap(SpaceXTapBase):
     def fetch_history(self) -> None:
         """
         Fetch and process history data from SpaceX API with Snowflake-compatible schema.
-        
-        Args:
-            base_url (str): Base URL for the SpaceX API
+
         """
         stream_name = "STG_SPACEX_DATA_HISTORY"
         
@@ -60,7 +58,8 @@ class HistoryTap(SpaceXTapBase):
                     "UPDATED_AT": {
                         "type": ["string", "null"],
                         "format": "date-time"
-                    }
+                    },
+                    "RAW_DATA": {"type": ["string", "null"]}
                 }
             }
         
@@ -91,7 +90,8 @@ class HistoryTap(SpaceXTapBase):
                         "LINKS": links,
                         "FLIGHT_NUMBER": event.get("flight_number"),
                         "CREATED_AT": current_time_str,
-                        "UPDATED_AT": current_time_str
+                        "UPDATED_AT": current_time_str,
+                        "RAW_DATA": json.dumps(event)
                     }
             
                     # Write record with timezone-aware timestamp
@@ -129,5 +129,3 @@ class HistoryTap(SpaceXTapBase):
                 error_message=f"Unexpected error: {str(e)}"
             )
             raise
-            
-        
