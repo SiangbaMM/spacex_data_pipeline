@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: stg_spacex_data__capsules
+    columns:
+      - name: capsule_id
+        description: This is a unique identifier of a Space X capsule
+        tests:
+          - unique
+          - not_null
+
+      - name: status
+        description: The status of a launches' capsule
+        tests:
+          - accepted_values:
+              values: ["unknown", "active", "retired", "destroyed"]
+              config:
+                severity: warn
+
+  
+  - name: stg_spacex_data__cores
+    columns:
+      - name: core_id
+        description: This is a unique identifier of a Space X cores
+        tests:
+          - unique
+          - not_null
+
+      - name: status
+        description: The status of a launches' core
+        tests:
+          - accepted_values:
+              values: ["active", "inactive", "unknown", "expended", "lost", "retired"]
+              config:
+                severity: warn
+
+  
+  - name: stg_spacex_data__crew
+    columns:
+      - name: status
+        description: The status of a launches' core
+        tests:
+          - accepted_values:
+              values: ["active", "inactive", "retired", "unknown"]
+              config:
+                severity: warn
+
+  - name: stg_spacex_data__launches
+    columns:
+      - name: date_precision
+        description: The status of a launches
+        tests:
+          - accepted_values:
+              values: ["half", "quarter", "year", "month", "day", "hour"]
+              config:
+                severity: warn
+
+  - name: stg_spacex_data__launchpads
+    columns:
+      - name: status
+        description: The status of a launches' core
+        tests:
+          - accepted_values:
+              values: ["active", "inactive", "unknown", "retired", "lost", "under construction"]
+              config:
+                severity: warn
+
+
+
+      
