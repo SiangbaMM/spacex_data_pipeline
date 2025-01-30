@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: stg_spacex_data
+    tables:
+      - name: stg_spacex_data_capsules
+      - name: stg_spacex_data_company
+      - name: stg_spacex_data_cores
+      - name: stg_spacex_data_crew
+      - name: stg_spacex_data_dragons
+      - name: stg_spacex_data_history
+      - name: stg_spacex_data_landpads
+      - name: stg_spacex_data_launches
+      - name: stg_spacex_data_launchpads
+      - name: stg_spacex_data_payloads
+      - name: stg_spacex_data_roadster
+      - name: stg_spacex_data_rockets
+      - name: stg_spacex_data_ships
+      - name: stg_spacex_data_starlink
