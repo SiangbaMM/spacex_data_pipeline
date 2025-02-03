@@ -1,0 +1,83 @@
+version: 2
+
+models:
+  - name: pbl_spacex_data_fct__launches
+    description: Main fact table containing launch information and metrics
+    columns:
+      - name: launch_id
+        description: Primary key for the launch
+        tests:
+          - unique
+          - not_null
+      - name: mission_name
+        description: Name of the mission
+        tests:
+          - not_null
+      - name: rocket_id
+        description: Reference to the rocket used
+        tests:
+          - relationships:
+              to: ref('pbl_spacex_data_dim__rockets')
+              field: rocket_id            
+      - name: launchpad_id
+        description: Foreign key to dim_launchpads
+        tests:
+          - relationships:
+              to: ref('pbl_spacex_data_dim__launchpads')
+              field: launchpad_id
+
+  - name: pbl_spacex_data_fct__launch_costs
+    description: Fact table containing launch cost analysis
+    columns:
+      - name: launch_id
+        description: Primary key for the launch
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('pbl_spacex_data_fct__launches')
+              field: launch_id
+      - name: estimated_launch_cost
+        description: Calculated launch cost considering reuse
+        tests:
+          - not_null
+          - positive_value
+
+  - name: pbl_spacex_data_dim__rockets
+    description: Dimension table for rockets
+    columns:
+      - name: rocket_id
+        description: Primary key for the rocket
+        tests:
+          - unique
+          - not_null
+  
+  - name: pbl_spacex_data_dim__cores
+    description: Dimension table for booster cores
+    columns:
+      - name: core_id
+        description: Unique identifier for the core
+        tests:
+          - unique
+          - not_null
+      - name: serial
+        description: Core serial number
+        tests:
+          - not_null
+          - unique
+  
+
+  - name: pbl_spacex_data_dim__payloads
+    description: Dimension table for mission payloads
+    columns:
+      - name: payload_id
+        description: Unique identifier for the payload
+        tests:
+          - unique
+          - not_null
+      - name: launch_id
+        description: Reference to the launch
+        tests:
+          - relationships:
+              to: ref('pbl_spacex_data_fct__launches')
+              field: launch_id
