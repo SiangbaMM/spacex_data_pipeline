@@ -35,3 +35,12 @@ models:
    
     staging:
       +materialized: view
+      +schema: cmp_spacex_data
+    
+    intermediate:
+      +materialized: incremental
+      +schema: cmp_spacex_data
+    
+    marts:
+      +materialized: table
+      +schema: pbl_spacex_data
