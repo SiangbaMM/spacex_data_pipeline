@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__history',
         unique_key='history_id'
     )
 }}

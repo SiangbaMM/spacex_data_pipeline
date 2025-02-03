@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__launchpad',
         unique_key='launchpad_id'
     )
 }}

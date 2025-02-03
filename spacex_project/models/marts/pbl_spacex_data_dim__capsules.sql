@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__capsules',
         unique_key='capsule_id'
     )
 }}

@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__landpad',
         unique_key='landpad_id'
     )
 }}

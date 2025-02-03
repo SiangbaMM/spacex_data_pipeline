@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__ship',
         unique_key='ship_id'
     )
 }}

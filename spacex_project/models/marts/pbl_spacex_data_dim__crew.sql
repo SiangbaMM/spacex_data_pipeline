@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__crew',
         unique_key='crew_id'
     )
 }}

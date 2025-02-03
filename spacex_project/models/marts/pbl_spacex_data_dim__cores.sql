@@ -1,6 +1,7 @@
 {{
     config(
         materialized='table',
+        alias='dim__core',
         unique_key='core_id'
     )
 }}
