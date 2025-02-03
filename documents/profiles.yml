@@ -1,0 +1,15 @@
+spacex_project:
+  outputs:
+    dev:
+      account: [account id (example  ak22246.uk-south.azure)] 
+      database: SPACEX_DATA_DEV
+      password: [password]
+      role: SPACEX_DATA_DEV_TRANSFORM_ROLE
+      schema: STG_SPACEX_DATA
+      threads: 16
+      type: snowflake
+      user: [username]
+      warehouse: SPACEX_DATA_DEV_TRANSFORM_WH
+      client_session_keep_alive: False
+      query_tag: [anything]
+  target: dev
