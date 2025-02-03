@@ -1,6 +1,5 @@
 
 {{ config(
-    schema = 'cmp_spacex_data',
     alias = 'vw_stg_spacex_data_landpads'
     ) 
 }}
@@ -9,30 +8,30 @@ with landpads as
 (
     select 
         landpad_id as landpad_id,
-	    name as name,
-	    full_name as full_name,
-	    status as status,
-	    type as type,
-	    locality as locality,
-	    region as region,
-	    latitude as latitude,
-	    longitude as longitude,
-	    landing_attempts as landing_attempts,
-	    landing_successes as landing_successes,
-	    wikipedia as wikipedia,
-	    details as details,
-	    launches as launches,
-	    images as images,
-        created_at as created_at,
-	    updated_at as updated_at,
-	    raw_data as raw_data,
-	    _sdc_extracted_at as sdc_extracted_at,
-        _sdc_received_at as sdc_received_at,
-        _sdc_batched_at as sdc_batched_at,
-        _sdc_deleted_at as sdc_deleted_at,
-        _sdc_sequence as sdc_sequence,
-        _sdc_table_version as sdc_table_version,
-        _sdc_sync_started_at as sdc_sync_started_at
+	    name as landpad_name,
+	    full_name as landpad_full_name,
+	    status as landpad_status,
+	    type as landpad_type,
+	    locality as landpad_locality,
+	    region as landpad_region,
+	    latitude as landpad_latitude,
+	    longitude as landpad_longitude,
+	    landing_attempts as landpad_landing_attempts,
+	    landing_successes as landpad_landing_successes,
+	    wikipedia as landpad_wikipedia,
+	    details as landpad_details,
+	    launches as landpad_launches,
+	    images as landpad_images,
+        created_at as landpad_created_at,
+	    updated_at as landpad_updated_at,
+	    raw_data as landpad_raw_data,
+	    _sdc_extracted_at as landpad_sdc_extracted_at,
+        _sdc_received_at as landpad_sdc_received_at,
+        _sdc_batched_at as landpad_sdc_batched_at,
+        _sdc_deleted_at as landpad_sdc_deleted_at,
+        _sdc_sequence as landpad_sdc_sequence,
+        _sdc_table_version as landpad_sdc_table_version,
+        _sdc_sync_started_at as landpad_sdc_sync_started_at
     
     from {{ source('stg_spacex_data', 'stg_spacex_data_landpads') }}
 )

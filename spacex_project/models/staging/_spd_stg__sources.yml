@@ -2,18 +2,61 @@ version: 2
 
 sources:
   - name: stg_spacex_data
+    database: SPACEX_DATA_DEV
+    schema: STG_SPACEX_DATA
     tables:
       - name: stg_spacex_data_capsules
+        description: Dragon capsule data and reuse information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_company
+        description: SpaceX company information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_cores
+        description: Core data including reuse information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_crew
+        description: Crew member information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_dragons
+        description: Dragon spacecraft configurations
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_history
+        description: Historical events of SpaceX
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_landpads
+        description: Landing pad information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_launches
+        description: Raw launch data from SpaceX API
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_launchpads
+        description: Detailed launch site information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_payloads
+        description: Payload information for each launch
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_roadster
+        description: Elon Musk's Tesla Roadster information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_rockets
+        description: Rocket configurations and specifications
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_ships
+        description: Recovery ship information
+        loaded_at_field: _sdc_extracted_at
+
       - name: stg_spacex_data_starlink
+        description: Starlink satellites information
+        loaded_at_field: _sdc_extracted_at
