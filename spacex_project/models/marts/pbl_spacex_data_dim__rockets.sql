@@ -1,7 +1,6 @@
 {{
     config(
         materialized='table',
-        alias='dim__rocket',
         unique_key='rocket_id'
     )
 }}

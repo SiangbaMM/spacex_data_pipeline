@@ -1,7 +1,6 @@
 {{
     config(
         materialized='table',
-        alias='dim__dragon',
         unique_key='dragon_id'
     )
 }}

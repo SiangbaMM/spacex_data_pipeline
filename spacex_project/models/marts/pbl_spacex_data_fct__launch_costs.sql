@@ -1,7 +1,6 @@
 {{
     config(
         materialized='incremental',
-        alias='fct_launches_costs',
         unique_key='launch_id'
     )
 }}

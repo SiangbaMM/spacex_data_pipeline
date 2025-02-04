@@ -493,7 +493,7 @@ erDiagram
 
 3. Arrays:
 
-   - Use native array types for simple lists (PostgreSQL)
+   - Use native array types for simple lists
    - Consider junction tables for complex relationships
 
 4. Temporal Data:

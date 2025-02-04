@@ -1,7 +1,6 @@
 {{
     config(
         materialized='incremental',
-        alias='dim__starlink',
         unique_key='starlink_id'
     )
 }}
