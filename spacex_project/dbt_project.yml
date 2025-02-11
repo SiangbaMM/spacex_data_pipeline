@@ -35,7 +35,7 @@ models:
    
     staging:
       +materialized: view
-      +schema: cmp_spacex_data
+      +schema: stg_spacex_data
     
     intermediate:
       +materialized: incremental
