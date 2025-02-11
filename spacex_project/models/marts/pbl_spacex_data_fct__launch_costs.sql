@@ -1,5 +1,6 @@
 {{
     config(
+        alias='pbl_spacex_data_fct_launch_costs',
         materialized='incremental',
         unique_key='launch_id'
     )
@@ -84,5 +85,5 @@ final as (
 select * from final
 
 {% if is_incremental() %}
-    where launches.sdc_extracted_at > (select max(sdc_extracted_at) from {{ this }})
+    where launches.launch_sdc_extracted_at > (select max(launch_sdc_extracted_at) from {{ this }})
 {% endif %}
