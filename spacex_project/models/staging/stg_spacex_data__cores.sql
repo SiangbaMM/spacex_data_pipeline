@@ -1,11 +1,11 @@
 {{ config(
     alias = 'vw_stg_spacex_data_cores'
-    ) 
+    )
 }}
 
-with cores as 
+with cores as
 (
-    select 
+    select
 	    core_id as core_id,
         serial as core_serial,
         block as core_block,

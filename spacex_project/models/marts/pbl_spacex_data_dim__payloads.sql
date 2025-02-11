@@ -23,5 +23,5 @@ select
     payload_sdc_extracted_at  as payload_sdc_extracted_at,
     payload_created_at as payload_created_at,
 	payload_updated_at as payload_updated_at
-    
+
 from {{ ref('stg_spacex_data__payloads') }}

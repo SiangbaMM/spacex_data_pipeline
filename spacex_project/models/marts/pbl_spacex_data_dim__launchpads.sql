@@ -20,11 +20,11 @@ with launchpads as (
         launchpad_sdc_extracted_at as launchpad_sdc_extracted_at,
         launchpad_created_at as launchpad_created_at,
 	    launchpad_updated_at as launchpad_updated_at
-        
+
     from {{ ref('stg_spacex_data__launchpads') }}
 )
 
-select 
+select
     *,
     current_timestamp() as dbt_loaded_at
 from launchpads

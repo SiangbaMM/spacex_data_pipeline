@@ -21,11 +21,11 @@ with dragons as (
         dragon_sdc_extracted_at as dragon_sdc_extracted_at,
         dragon_created_at as dragon_created_at,
 	    dragon_updated_at as dragon_updated_at
-        
+
     from {{ ref('stg_spacex_data__dragons') }}
 )
 
-select 
+select
     *,
     current_timestamp() as dbt_loaded_at
 from dragons

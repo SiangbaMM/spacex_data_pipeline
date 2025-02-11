@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_dragons'
-    ) 
+    )
 }}
 
-with dragons as 
+with dragons as
 (
-    select 
+    select
         dragon_id as dragon_id,
 	    name as dragon_name,
 	    type as dragon_type,
@@ -40,7 +40,7 @@ with dragons as
         _sdc_sequence as dragon_sdc_sequence,
         _sdc_table_version as dragon_sdc_table_version,
         _sdc_sync_started_at as dragon_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_dragons') }}
 )
 

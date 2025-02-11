@@ -10,13 +10,13 @@ with launch_crew as (
         launch.launch_id as launch_id,
         crew_member.value:crew::string as crew_id,
         crew_member.value:role::string as crew_role,
-        launch.launch_sdc_extracted_at 
+        launch.launch_sdc_extracted_at
     from {{ ref('stg_spacex_data__launches') }} launch,
         lateral flatten(input => launch_crew) as crew_member
-        
+
 )
 
-select 
+select
     {{ dbt_utils.generate_surrogate_key(['launch_crew.launch_id', 'crew.crew_id']) }} as bridge_launch_crew_launch_crew_id,
     launch_crew.launch_id as bridge_launch_crew_launch_id,
     crew.crew_id as bridge_launch_crew_id,

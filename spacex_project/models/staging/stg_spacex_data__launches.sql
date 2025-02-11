@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_launches'
-    ) 
+    )
 }}
 
-with launches as 
+with launches as
 (
-    select    
+    select
 	    launch_id as launch_id,
 	    flight_number as launch_flight_number,
 	    name as launch_mission_name,
@@ -43,7 +43,7 @@ with launches as
         _sdc_sequence as launch_sdc_sequence,
         _sdc_table_version as launch_sdc_table_version,
         _sdc_sync_started_at as launch_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_launches') }}
 )
 

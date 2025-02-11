@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_starlink'
-    ) 
+    )
 }}
 
-with starlink as 
+with starlink as
 (
-    select    
+    select
 	    starlink_id as starlink_id,
 	    version as starlink_satellite_version,
 	    launch as starlink_launch_id,
@@ -39,7 +39,7 @@ with starlink as
         _sdc_sequence as starlink_sdc_sequence,
         _sdc_table_version as starlink_sdc_table_version,
         _sdc_sync_started_at as starlink_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_starlink') }}
 )
 

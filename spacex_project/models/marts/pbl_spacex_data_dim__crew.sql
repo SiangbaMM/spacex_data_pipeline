@@ -16,11 +16,11 @@ with crew as (
         crew_sdc_extracted_at as crew_sdc_extracted_at,
         crew_created_at as crew_created_at,
 	    crew_updated_at as crew_updated_at
-        
+
     from {{ ref('stg_spacex_data__crew') }}
 )
 
-select 
+select
     *,
     current_timestamp() as dbt_loaded_at
 from crew

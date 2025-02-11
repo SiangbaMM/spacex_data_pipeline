@@ -1,17 +1,28 @@
-import singer                                           # type: ignore
-import requests                                         # type: ignore
 import json
+
+import requests  # type: ignore
+import singer  # type: ignore
 from include.spacex_tap_base import SpaceXTapBase
 
+
 class RocketsTap(SpaceXTapBase):
-    
+    """RocketsTap is a SpaceXTapBase sub class in charge of \
+        SpaceX Rockets entity ingestion
+
+    Args:
+    - base_url (str) : The root url of v4 SpaceX API
+    - config_path (str) : Config file that contains database credentials
+    """
+
+    def __init__(self, base_url: str, config_path: str):
+        """Inherit base_url and config_path from SpaceXTapBase"""
+        super().__init__(base_url, config_path)
+
     def fetch_rockets(self) -> None:
-        """
-        Fetch and process rockets data from SpaceX API with Snowflake-compatible schema.
-        """
-        
-        stream_name="STG_SPACEX_DATA_ROCKETS"
-        
+        """Fetch and process rockets data from SpaceX API with \
+            Snowflake-compatible schema."""
+        stream_name = "STG_SPACEX_DATA_ROCKETS"
+
         try:
             # Fetch data from the rockets endpoint
             response = requests.get(self.base_url + "rockets")
@@ -24,108 +35,60 @@ class RocketsTap(SpaceXTapBase):
                 "properties": {
                     "ROCKET_ID": {
                         "type": ["string", "null"],
-                        "description": "Unique identifier for the rocket"
+                        "description": "Unique identifier for the rocket",
                     },
-                    "NAME": {
-                        "type": ["string", "null"],
-                        "maxLength": 256
-                    },
-                    "TYPE": {
-                        "type": ["string", "null"],
-                        "maxLength": 50
-                    },
-                    "ACTIVE": {
-                        "type": ["boolean", "null"]
-                    },
-                    "STAGES": {
-                        "type": ["integer", "null"]
-                    },
-                    "BOOSTERS": {
-                        "type": ["integer", "null"]
-                    },
-                    "COST_PER_LAUNCH": {
-                        "type": ["integer", "null"]
-                    },
-                    "SUCCESS_RATE_PCT": {
-                        "type": ["integer", "null"]
-                    },
-                    "FIRST_FLIGHT": {
-                        "type": ["string", "null"],
-                        "format": "date"
-                    },
-                    "COUNTRY": {
-                        "type": ["string", "null"],
-                        "maxLength": 100
-                    },
-                    "COMPANY": {
-                        "type": ["string", "null"],
-                        "maxLength": 100
-                    },
-                    "HEIGHT_METERS": {
-                        "type": ["number", "null"]
-                    },
-                    "HEIGHT_FEET": {
-                        "type": ["number", "null"]
-                    },
-                    "DIAMETER_METERS": {
-                        "type": ["number", "null"]
-                    },
-                    "DIAMETER_FEET": {
-                        "type": ["number", "null"]
-                    },
-                    "MASS_KG": {
-                        "type": ["number", "null"]
-                    },
-                    "MASS_LBS": {
-                        "type": ["number", "null"]
-                    },
+                    "NAME": {"type": ["string", "null"], "maxLength": 256},
+                    "TYPE": {"type": ["string", "null"], "maxLength": 50},
+                    "ACTIVE": {"type": ["boolean", "null"]},
+                    "STAGES": {"type": ["integer", "null"]},
+                    "BOOSTERS": {"type": ["integer", "null"]},
+                    "COST_PER_LAUNCH": {"type": ["integer", "null"]},
+                    "SUCCESS_RATE_PCT": {"type": ["integer", "null"]},
+                    "FIRST_FLIGHT": {"type": ["string", "null"], "format": "date"},
+                    "COUNTRY": {"type": ["string", "null"], "maxLength": 100},
+                    "COMPANY": {"type": ["string", "null"], "maxLength": 100},
+                    "HEIGHT_METERS": {"type": ["number", "null"]},
+                    "HEIGHT_FEET": {"type": ["number", "null"]},
+                    "DIAMETER_METERS": {"type": ["number", "null"]},
+                    "DIAMETER_FEET": {"type": ["number", "null"]},
+                    "MASS_KG": {"type": ["number", "null"]},
+                    "MASS_LBS": {"type": ["number", "null"]},
                     "PAYLOAD_WEIGHTS": {
                         "type": ["string", "null"],
-                        "description": "Array of payload weight info stored as JSON string"
+                        "description": "Array of payload weight info stored \
+                            as JSON string",
                     },
                     "FIRST_STAGE": {
                         "type": ["string", "null"],
-                        "description": "First stage details stored as JSON string"
+                        "description": "First stage details stored as JSON string",
                     },
                     "SECOND_STAGE": {
                         "type": ["string", "null"],
-                        "description": "Second stage details stored as JSON string"
+                        "description": "Second stage details stored as JSON string",
                     },
                     "ENGINES": {
                         "type": ["string", "null"],
-                        "description": "Engine details stored as JSON string"
+                        "description": "Engine details stored as JSON string",
                     },
                     "LANDING_LEGS": {
                         "type": ["string", "null"],
-                        "description": "Landing legs details stored as JSON string"
+                        "description": "Landing legs details stored as JSON string",
                     },
                     "FLICKR_IMAGES": {
                         "type": ["string", "null"],
-                        "description": "Array of image URLs stored as JSON string"
+                        "description": "Array of image URLs stored as JSON string",
                     },
-                    "WIKIPEDIA": {
-                        "type": ["string", "null"]
-                    },
-                    "DESCRIPTION": {
-                        "type": ["string", "null"]
-                    },
-                    "CREATED_AT": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "UPDATED_AT": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "RAW_DATA": {"type": ["string", "null"]}
-                }
+                    "WIKIPEDIA": {"type": ["string", "null"]},
+                    "DESCRIPTION": {"type": ["string", "null"]},
+                    "CREATED_AT": {"type": ["string", "null"], "format": "date-time"},
+                    "UPDATED_AT": {"type": ["string", "null"], "format": "date-time"},
+                    "RAW_DATA": {"type": ["string", "null"]},
+                },
             }
 
             # Write schema
             singer.write_schema(
-                stream_name=stream_name,
-                schema=schema,
-                key_properties=["ROCKET_ID"]
+                stream_name=stream_name, schema=schema, key_properties=["ROCKET_ID"]
             )
 
             # Get current time with timezone
@@ -159,7 +122,9 @@ class RocketsTap(SpaceXTapBase):
                         "DIAMETER_FEET": diameter.get("feet"),
                         "MASS_KG": mass.get("kg"),
                         "MASS_LBS": mass.get("lb"),
-                        "PAYLOAD_WEIGHTS": json.dumps(rocket.get("payload_weights", [])),
+                        "PAYLOAD_WEIGHTS": json.dumps(
+                            rocket.get("payload_weights", [])
+                        ),
                         "FIRST_STAGE": json.dumps(rocket.get("first_stage", {})),
                         "SECOND_STAGE": json.dumps(rocket.get("second_stage", {})),
                         "ENGINES": json.dumps(rocket.get("engines", {})),
@@ -169,42 +134,38 @@ class RocketsTap(SpaceXTapBase):
                         "DESCRIPTION": rocket.get("description"),
                         "CREATED_AT": current_time_str,
                         "UPDATED_AT": current_time_str,
-                        "RAW_DATA": json.dumps(rocket)
+                        "RAW_DATA": json.dumps(rocket),
                     }
 
                     # Write record with timezone-aware timestamp
                     singer.write_record(
                         stream_name=stream_name,
                         record=transformed_rocket,
-                        time_extracted=current_time
+                        time_extracted=current_time,
                     )
-                
+
                 except Exception as transform_error:
                     self.log_error(
                         table_name=stream_name,
-                        error_message=f"Data transformation error: {str(transform_error)}",
-                        error_data=rocket
+                        error_message=f"Data transformation error: \
+                            {str(transform_error)}",
+                        error_data=rocket,
                     )
                     continue  # Continue processing other rocket
 
             # Write state
-            state = {
-                "STG_SPACEX_DATA_ROCKETS": {
-                    "last_sync": current_time_str
-                }
-            }
+            state = {"STG_SPACEX_DATA_ROCKETS": {"last_sync": current_time_str}}
             singer.write_state(state)
-        
+
         except requests.exceptions.RequestException as api_error:
             self.log_error(
                 table_name=stream_name,
-                error_message=f"API request error: {str(api_error)}"
+                error_message=f"API request error: {str(api_error)}",
             )
             raise
 
         except Exception as e:
             self.log_error(
-                table_name=stream_name,
-                error_message=f"Unexpected error: {str(e)}"
+                table_name=stream_name, error_message=f"Unexpected error: {str(e)}"
             )
             raise

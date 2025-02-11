@@ -20,7 +20,7 @@ select
     starlink_sdc_extracted_at as starlink_sdc_extracted_at,
     starlink_created_at as starlink_created_at,
 	starlink_updated_at as starlink_updated_at
-        
+
 from {{ ref('stg_spacex_data__starlink') }}
 
 {% if is_incremental() %}

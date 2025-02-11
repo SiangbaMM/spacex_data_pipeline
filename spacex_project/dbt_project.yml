@@ -32,15 +32,15 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   spacex_project:
     # Config indicated by + and applies to all files under models/example/
-   
+
     staging:
       +materialized: view
       +schema: stg_spacex_data
-    
+
     intermediate:
       +materialized: incremental
       +schema: cmp_spacex_data
-    
+
     marts:
       +materialized: table
       +schema: pbl_spacex_data

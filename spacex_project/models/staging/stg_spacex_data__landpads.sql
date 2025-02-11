@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_landpads'
-    ) 
+    )
 }}
 
-with landpads as 
+with landpads as
 (
-    select 
+    select
         landpad_id as landpad_id,
 	    name as landpad_name,
 	    full_name as landpad_full_name,
@@ -32,7 +32,7 @@ with landpads as
         _sdc_sequence as landpad_sdc_sequence,
         _sdc_table_version as landpad_sdc_table_version,
         _sdc_sync_started_at as landpad_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_landpads') }}
 )
 

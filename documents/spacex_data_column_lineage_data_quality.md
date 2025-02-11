@@ -171,10 +171,10 @@ columns:
       - estimated_launch_cost
       - total_payload_mass_kg
     transformation: |
-      CASE 
-          WHEN total_payload_mass_kg > 0 
+      CASE
+          WHEN total_payload_mass_kg > 0
           THEN estimated_launch_cost / total_payload_mass_kg
-          ELSE NULL 
+          ELSE NULL
       END
 ```
 

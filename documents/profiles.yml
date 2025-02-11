@@ -1,7 +1,7 @@
 spacex_project:
   outputs:
     dev:
-      account: [account id (example  ak22246.uk-south.azure)] 
+      account: [account id (example  ak22246.uk-south.azure)]
       database: SPACEX_DATA_DEV
       password: [password]
       role: SPACEX_DATA_DEV_TRANSFORM_ROLE

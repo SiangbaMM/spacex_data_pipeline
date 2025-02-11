@@ -18,6 +18,6 @@ select
     core_status as core_status,
     core_sdc_extracted_at as core_sdc_extracted_at,
     core_created_at as core_created_at,
-	core_updated_at as core_updated_at  
+	core_updated_at as core_updated_at
 
 from {{ ref('stg_spacex_data__cores') }}

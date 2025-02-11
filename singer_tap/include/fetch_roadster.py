@@ -1,19 +1,28 @@
-
-import singer                                           # type: ignore
-import requests                                         # type: ignore
 import json
+
+import requests  # type: ignore
+import singer  # type: ignore
 from include.spacex_tap_base import SpaceXTapBase
 
 
 class RoadsterTap(SpaceXTapBase):
-    
+    """RoadsterTap is a SpaceXTapBase sub class in charge of \
+        SpaceX Roadsters entity ingestion
+
+    Args:
+    - base_url (str) : The root url of v4 SpaceX API
+    - config_path (str) : Config file that contains database credentials
+    """
+
+    def __init__(self, base_url: str, config_path: str):
+        """Inherit base_url and config_path from SpaceXTapBase"""
+        super().__init__(base_url, config_path)
+
     def fetch_roadster(self) -> None:
-        """
-        Fetch and process roadster data from SpaceX API with Snowflake-compatible schema.
-        """
-        
-        stream_name="STG_SPACEX_DATA_ROADSTER"
-        
+        """Fetch and process roadster data from SpaceX API with \
+            Snowflake-compatible schema."""
+        stream_name = "STG_SPACEX_DATA_ROADSTER"
+
         try:
             # Fetch data from the roadster endpoint
             response = requests.get(self.base_url + "roadster")
@@ -26,99 +35,54 @@ class RoadsterTap(SpaceXTapBase):
                 "properties": {
                     "ROADSTER_ID": {
                         "type": ["string", "null"],
-                        "description": "Unique identifier for the roadster"
+                        "description": "Unique identifier for the roadster",
                     },
-                    "NAME": {
-                        "type": ["string", "null"],
-                        "maxLength": 256
-                    },
+                    "NAME": {"type": ["string", "null"], "maxLength": 256},
                     "LAUNCH_DATE_UTC": {
                         "type": ["string", "null"],
-                        "format": "date-time"
+                        "format": "date-time",
                     },
-                    "LAUNCH_DATE_UNIX": {
-                        "type": ["integer", "null"]
-                    },
-                    "LAUNCH_MASS_KG": {
-                        "type": ["number", "null"]
-                    },
-                    "LAUNCH_MASS_LBS": {
-                        "type": ["number", "null"]
-                    },
-                    "NORAD_ID": {
-                        "type": ["integer", "null"]
-                    },
+                    "LAUNCH_DATE_UNIX": {"type": ["integer", "null"]},
+                    "LAUNCH_MASS_KG": {"type": ["number", "null"]},
+                    "LAUNCH_MASS_LBS": {"type": ["number", "null"]},
+                    "NORAD_ID": {"type": ["integer", "null"]},
                     "EPOCH_JD": {
                         "type": ["number", "null"],
-                        "description": "Julian Date of epoch"
+                        "description": "Julian Date of epoch",
                     },
-                    "ORBIT_TYPE": {
-                        "type": ["string", "null"]
-                    },
-                    "APOAPSIS_AU": {
-                        "type": ["number", "null"]
-                    },
-                    "PERIAPSIS_AU": {
-                        "type": ["number", "null"]
-                    },
-                    "SEMI_MAJOR_AXIS_AU": {
-                        "type": ["number", "null"]
-                    },
-                    "ECCENTRICITY": {
-                        "type": ["number", "null"]
-                    },
-                    "INCLINATION": {
-                        "type": ["number", "null"]
-                    },
-                    "LONGITUDE": {
-                        "type": ["number", "null"]
-                    },
-                    "PERIOD_DAYS": {
-                        "type": ["number", "null"]
-                    },
-                    "SPEED_KPH": {
-                        "type": ["number", "null"]
-                    },
-                    "SPEED_MPH": {
-                        "type": ["number", "null"]
-                    },
-                    "EARTH_DISTANCE_KM": {
-                        "type": ["number", "null"]
-                    },
-                    "EARTH_DISTANCE_MI": {
-                        "type": ["number", "null"]
-                    },
-                    "MARS_DISTANCE_KM": {
-                        "type": ["number", "null"]
-                    },
-                    "MARS_DISTANCE_MI": {
-                        "type": ["number", "null"]
-                    },
-                    "WIKIPEDIA": {
-                        "type": ["string", "null"]
-                    },
-                    "DETAILS": {
-                        "type": ["string", "null"]
-                    },
+                    "ORBIT_TYPE": {"type": ["string", "null"]},
+                    "APOAPSIS_AU": {"type": ["number", "null"]},
+                    "PERIAPSIS_AU": {"type": ["number", "null"]},
+                    "SEMI_MAJOR_AXIS_AU": {"type": ["number", "null"]},
+                    "ECCENTRICITY": {"type": ["number", "null"]},
+                    "INCLINATION": {"type": ["number", "null"]},
+                    "LONGITUDE": {"type": ["number", "null"]},
+                    "PERIOD_DAYS": {"type": ["number", "null"]},
+                    "SPEED_KPH": {"type": ["number", "null"]},
+                    "SPEED_MPH": {"type": ["number", "null"]},
+                    "EARTH_DISTANCE_KM": {"type": ["number", "null"]},
+                    "EARTH_DISTANCE_MI": {"type": ["number", "null"]},
+                    "MARS_DISTANCE_KM": {"type": ["number", "null"]},
+                    "MARS_DISTANCE_MI": {"type": ["number", "null"]},
+                    "WIKIPEDIA": {"type": ["string", "null"]},
+                    "DETAILS": {"type": ["string", "null"]},
                     "VIDEO": {
                         "type": ["string", "null"],
-                        "description": "URL of video"
+                        "description": "URL of video",
                     },
                     "FLICKR_IMAGES": {
                         "type": ["string", "null"],
-                        "description": "Array of image URLs stored as JSON string"
+                        "description": "Array of image URLs stored as JSON string",
                     },
                     "CREATED_AT": {"type": ["string", "null"]},
                     "UPDATED_AT": {"type": ["string", "null"]},
-                    "RAW_DATA": {"type": ["string", "null"]}
-                }
+                    "RAW_DATA": {"type": ["string", "null"]},
+                },
             }
 
             # Write schema
             singer.write_schema(
-                stream_name=stream_name,
-                schema=schema,
-                key_properties=["ROADSTER_ID"]
+                stream_name=stream_name, schema=schema, key_properties=["ROADSTER_ID"]
             )
 
             # Get current time with timezone
@@ -155,34 +119,29 @@ class RoadsterTap(SpaceXTapBase):
                 "FLICKR_IMAGES": json.dumps(roadster_data.get("flickr_images", [])),
                 "CREATED_AT": current_time_str,
                 "UPDATED_AT": current_time_str,
-                "RAW_DATA": json.dumps(roadster_data)
+                "RAW_DATA": json.dumps(roadster_data),
             }
 
             # Write record with timezone-aware timestamp
             singer.write_record(
                 stream_name=stream_name,
                 record=transformed_roadster,
-                time_extracted=current_time
+                time_extracted=current_time,
             )
 
             # Write state
-            state = {
-                "STG_SPACEX_DATA_ROADSTER": {
-                    "last_sync": current_time_str
-                }
-            }
+            state = {"STG_SPACEX_DATA_ROADSTER": {"last_sync": current_time_str}}
             singer.write_state(state)
-        
+
         except requests.exceptions.RequestException as api_error:
             self.log_error(
                 table_name=stream_name,
-                error_message=f"API request error: {str(api_error)}"
+                error_message=f"API request error: {str(api_error)}",
             )
             raise
 
         except Exception as e:
             self.log_error(
-                table_name=stream_name,
-                error_message=f"Unexpected error: {str(e)}"
+                table_name=stream_name, error_message=f"Unexpected error: {str(e)}"
             )
             raise

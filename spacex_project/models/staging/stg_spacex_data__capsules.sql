@@ -1,17 +1,17 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_capsules'
-    ) 
+    )
 }}
 
-with capsules as 
+with capsules as
 (
-    select 
+    select
         capsule_id as capsule_id,
         serial as capsule_serial,
         status as capsule_status,
         dragon as capsule_dragon_id,
-        reuse_count as capsule_reuse_count, 
+        reuse_count as capsule_reuse_count,
         water_landings as capsule_water_landings,
         land_landings as capsule_land_landings,
         last_update as capsule_last_update,
@@ -26,7 +26,7 @@ with capsules as
         _sdc_sequence as capsule_sdc_sequence,
         _sdc_table_version as capsule_sdc_table_version,
         _sdc_sync_started_at as capsule_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_capsules') }}
 )
 
