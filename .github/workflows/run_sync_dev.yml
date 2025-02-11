@@ -1,0 +1,8 @@
+name: run_sync_dev
+on: workflow_dispatch
+jobs:
+  first-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print steps
+        run: echo "Hello world !"
