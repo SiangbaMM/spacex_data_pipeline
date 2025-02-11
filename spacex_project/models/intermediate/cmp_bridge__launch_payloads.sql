@@ -1,6 +1,6 @@
 {{
     config(
-        alias='bridge_launch_payload',
+        alias='cmp_spacex_data_bridge_launch_payload',
         unique_key='bridge_launch_payload_launch_payload_id'
     )
 }}
