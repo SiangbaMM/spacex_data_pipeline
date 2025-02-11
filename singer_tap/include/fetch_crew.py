@@ -11,10 +11,8 @@ class CrewTap(SpaceXTapBase):
     def fetch_crew(self) -> None:
         """
         Fetch and process crew data from SpaceX API with Snowflake-compatible schema.
-        
-        Args:
-            base_url (str): Base URL for the SpaceX API
         """
+        
         stream_name = "STG_SPACEX_DATA_CREW"
         # Fetch data from the crew endpoint
         

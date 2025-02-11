@@ -8,8 +8,8 @@ class HistoryTap(SpaceXTapBase):
     def fetch_history(self) -> None:
         """
         Fetch and process history data from SpaceX API with Snowflake-compatible schema.
-
         """
+        
         stream_name = "STG_SPACEX_DATA_HISTORY"
         
         try:
@@ -110,7 +110,7 @@ class HistoryTap(SpaceXTapBase):
         
             # Write state
             state = {
-                "HISTORY": {
+                "STG_SPACEX_DATA_HISTORY": {
                     "last_sync": current_time_str
                 }
             }

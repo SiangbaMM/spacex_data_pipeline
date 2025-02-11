@@ -11,9 +11,6 @@ class LaunchesTap(SpaceXTapBase):
     def fetch_launches(self) -> None:
         """
         Fetch and process launches data from SpaceX API with Snowflake-compatible schema.
-        
-        Args:
-            base_url (str): Base URL for the SpaceX API
         """
         
         stream_name="STG_SPACEX_DATA_LAUNCHES"
@@ -188,7 +185,7 @@ class LaunchesTap(SpaceXTapBase):
         
             # Write state
             state = {
-                "LAUNCHES": {
+                "STG_SPACEX_DATA_LAUNCHES": {
                     "last_sync": current_time_str
                 }
             }

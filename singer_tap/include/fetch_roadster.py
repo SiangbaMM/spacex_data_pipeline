@@ -10,9 +10,6 @@ class RoadsterTap(SpaceXTapBase):
     def fetch_roadster(self) -> None:
         """
         Fetch and process roadster data from SpaceX API with Snowflake-compatible schema.
-        
-        Args:
-            base_url (str): Base URL for the SpaceX API
         """
         
         stream_name="STG_SPACEX_DATA_ROADSTER"
@@ -170,7 +167,7 @@ class RoadsterTap(SpaceXTapBase):
 
             # Write state
             state = {
-                "ROADSTER": {
+                "STG_SPACEX_DATA_ROADSTER": {
                     "last_sync": current_time_str
                 }
             }

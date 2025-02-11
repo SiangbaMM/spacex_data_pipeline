@@ -8,7 +8,6 @@ class shipsTap(SpaceXTapBase):
     def fetch_ships(self) -> None:
         """
         Fetch and process ships data from SpaceX API with Snowflake-compatible schema.
-        
         """
         
         stream_name="STG_SPACEX_DATA_SHIPS"
@@ -187,7 +186,7 @@ class shipsTap(SpaceXTapBase):
 
             # Write state
             state = {
-                "SHIPS": {
+                "STG_SPACEX_DATA_SHIPS": {
                     "last_sync": current_time_str
                 }
             }

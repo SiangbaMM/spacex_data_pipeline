@@ -4,7 +4,8 @@ import json
 import pytz                                 # type: ignore
 from datetime import datetime
 from typing import Dict, Any
-from snowflake.connector.errors import Error as SnowflakeError          # type: ignore
+from snowflake.connector.errors import DatabaseError, Error as SnowflakeError          # type: ignore
+
 
 
 class SpaceXTapBase:
@@ -26,25 +27,43 @@ class SpaceXTapBase:
             return json.load(f)
 
     def _create_snowflake_connection(self):
-        """Create Snowflake connection."""
-        return snowflake.connector.connect(
-            user=self.snowflake_config['user'],
-            password=self.snowflake_config['password'],
-            account=self.snowflake_config['account'],
-            warehouse=self.snowflake_config['warehouse'],
-            database=self.snowflake_config['database'],
-            schema=self.snowflake_config['schema'],
-            insecure_mode=True
-        )
+        """
+        Create Snowflake connection.
+        """
+        
+        try:
+        # Establish connection
+            conn = snowflake.connector.connect(
+                user=self.snowflake_config['user'],
+                password=self.snowflake_config['password'],
+                account=self.snowflake_config['account'],
+                warehouse=self.snowflake_config['warehouse'],
+                database=self.snowflake_config['database'],
+                schema=self.snowflake_config['schema'],
+                ocsp_response_cache_filename=None,
+                validate_default_parameters=True
+            )
+            
+            # Test connection with a simple query
+            cursor = conn.cursor()
+            cursor.execute('SELECT current_version()')
+            version = cursor.fetchone()[0]
+            
+            return conn if version is not None else conn.close()
+        
+        except DatabaseError as e:
+            print(f"Failed to connect to Snowflake. Error: {str(e)}")
+            return False
+        
 
     def log_error(self, table_name: str, error_message: str, error_data: Dict = None):
-        """Log error to Snowflake LOAD_ERRORS table."""
+        """Log error to Snowflake STG_SPACEX_DATA_LOAD_ERRORS table."""
         try:
             cursor = self.conn.cursor()
             error_time = datetime.now(pytz.UTC).isoformat()
             
             insert_query = """
-            INSERT INTO LOAD_ERRORS (
+            INSERT INTO STG_SPACEX_DATA_LOAD_ERRORS (
                 TABLE_NAME,
                 ERROR_TIME,
                 ERROR_MESSAGE,
@@ -71,7 +90,7 @@ class SpaceXTapBase:
             
             self.conn.commit()
         except SnowflakeError as e:
-            singer.get_logger().error(f"Error logging to LOAD_ERRORS table: {str(e)}")
+            singer.get_logger().error(f"Error logging to STG_SPACEX_DATA_LOAD_ERRORS table: {str(e)}")
         finally:
             cursor.close()
 

@@ -13,7 +13,9 @@ class CompanyTap(SpaceXTapBase):
         super().__init__(base_url, config_path)
 
     def fetch_company(self):
-        """Fetch and process company data."""
+        """
+        Fetch and process company data.
+        """
         
         stream_name = "STG_SPACEX_DATA_COMPANY"
         
@@ -101,7 +103,7 @@ class CompanyTap(SpaceXTapBase):
             
             # Write state
             state = {
-                "CAPSULES": {
+                "STG_SPACEX_DATA_CAPSULES": {
                     "last_sync": current_time_str
                 }
             }

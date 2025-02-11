@@ -219,6 +219,7 @@ def main():
         orchestrator = SpaceXTapOrchestrator(BASE_URL, CONFIG_PATH)
 
         # Run first set
+        logger.info("\n\n=================================================================================================\n\n")
         logger.info("Starting execution of first set...")
         orchestrator.run_first_set()
         logger.info("First set completed successfully")
@@ -237,7 +238,7 @@ def main():
         time.sleep(5)
         
         # Run third set
-        logger.info("Starting execution of second set...")
+        logger.info("Starting execution of third set...")
         orchestrator.run_third_set()
         logger.info("Second set completed successfully")
 

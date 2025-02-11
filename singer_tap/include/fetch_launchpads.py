@@ -10,9 +10,6 @@ class LaunchpadsTap(SpaceXTapBase):
     def fetch_launchpads(self) -> None:
         """
         Fetch and process launchpads data from SpaceX API with Snowflake-compatible schema.
-        
-        Args:
-            base_url (str): Base URL for the SpaceX API
         """
         
         stream_name="STG_SPACEX_DATA_LAUNCHPADS"
