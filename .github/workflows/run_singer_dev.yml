@@ -31,7 +31,7 @@ jobs:
         run: |
           pip install pytest unittest
           pip install -e .
-          pip install singer 
+          pip install singer
           # Add any specific singer tap dependencies here
 
       - name: Run Singer tap tests

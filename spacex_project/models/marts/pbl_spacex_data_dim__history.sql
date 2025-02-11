@@ -18,6 +18,5 @@ select
     history_sdc_extracted_at as history_sdc_extracted_at,
     history_created_at as history_created_at,
 	history_updated_at as history_updated_at
-    
-from {{ ref('stg_spacex_data__history') }}
 
+from {{ ref('stg_spacex_data__history') }}

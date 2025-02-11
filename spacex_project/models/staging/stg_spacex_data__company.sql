@@ -1,11 +1,11 @@
 {{ config(
     alias = 'vw_stg_spacex_data_company'
-    ) 
+    )
 }}
 
-with company as 
+with company as
 (
-    select 
+    select
 	    id as company_id,
 	    name as company_name,
 	    founder as company_founder,

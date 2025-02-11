@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_ships'
-    ) 
+    )
 }}
 
-with ships as 
+with ships as
 (
-    select   
+    select
 	    ship_id as ship_id,
 	    name as ship_name,
 	    legacy_id as ship_legacy_id,
@@ -41,7 +41,7 @@ with ships as
         _sdc_sequence as ship_sdc_sequence,
         _sdc_table_version as ship_sdc_table_version,
         _sdc_sync_started_at as ship_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_ships') }}
 )
 

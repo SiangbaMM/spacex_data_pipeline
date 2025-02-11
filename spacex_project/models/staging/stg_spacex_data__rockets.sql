@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_rockets'
-    ) 
+    )
 }}
 
-with rocket as 
+with rocket as
 (
-    select 
+    select
         rocket_id as rocket_id,
 	    name as rocket_name,
 	    type as rocket_type,
@@ -42,7 +42,7 @@ with rocket as
         _sdc_sequence as rocket_sdc_sequence,
         _sdc_table_version as rocket_sdc_table_version,
         _sdc_sync_started_at as rocket_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_rockets') }}
 )
 

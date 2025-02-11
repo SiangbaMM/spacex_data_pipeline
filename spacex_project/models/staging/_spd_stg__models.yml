@@ -17,7 +17,7 @@ models:
               config:
                 severity: warn
 
-  
+
   - name: stg_spacex_data__cores
     columns:
       - name: core_id
@@ -34,7 +34,7 @@ models:
               config:
                 severity: warn
 
-  
+
   - name: stg_spacex_data__crew
     columns:
       - name: status
@@ -64,7 +64,3 @@ models:
               values: ["active", "inactive", "unknown", "retired", "lost", "under construction"]
               config:
                 severity: warn
-
-
-
-      

@@ -25,11 +25,11 @@ with rockets as (
         rocket_sdc_extracted_at as rocket_sdc_extracted_at,
         rocket_created_at as rocket_created_at,
 	    rocket_updated_at as rocket_updated_at
-    
+
     from {{ ref('stg_spacex_data__rockets') }}
 )
 
-select 
+select
     *,
     current_timestamp() as dbt_loaded_at
 from rockets

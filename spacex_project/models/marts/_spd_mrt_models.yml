@@ -23,7 +23,7 @@ models:
         tests:
           - unique
           - not_null
-  
+
   - name: pbl_spacex_data_dim__cores
     description: Dimension table for booster cores
     columns:
@@ -37,7 +37,7 @@ models:
         tests:
           - not_null
           - unique
-  
+
 
   - name: pbl_spacex_data_dim__payloads
     description: Dimension table for mission payloads
@@ -47,4 +47,3 @@ models:
         tests:
           - unique
           - not_null
-      

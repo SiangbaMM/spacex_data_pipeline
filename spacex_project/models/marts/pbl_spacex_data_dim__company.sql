@@ -28,7 +28,5 @@ select
     company_sdc_extracted_at as company_sdc_extracted_at,
     company_created_at as company_created_at,
 	company_updated_at as company_updated_at
-    
+
 from {{ ref('stg_spacex_data__company') }}
-
-

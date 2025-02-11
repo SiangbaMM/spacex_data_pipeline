@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_payloads'
-    ) 
+    )
 }}
 
-with payloads as 
+with payloads as
 (
-    select 
+    select
 	    payload_id as payload_id,
 	    name as payload_name,
 	    type as payload_type,
@@ -45,7 +45,7 @@ with payloads as
         _sdc_sequence as payload_sdc_sequence,
         _sdc_table_version as payload_sdc_table_version,
         _sdc_sync_started_at as payload_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_payloads') }}
 )
 

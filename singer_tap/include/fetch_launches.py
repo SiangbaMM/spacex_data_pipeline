@@ -1,138 +1,108 @@
-import singer                                           # type: ignore
-import requests                                         # type: ignore
 import json
+
+import requests  # type: ignore
+import singer  # type: ignore
 from include.spacex_tap_base import SpaceXTapBase
 
 
 class LaunchesTap(SpaceXTapBase):
+    """LaunchesTap is a SpaceXTapBase sub class in charge of \
+        SpaceX Launches entity ingestion
+
+    Args:
+    - base_url (str) : The root url of v4 SpaceX API
+    - config_path (str) : Config file that contains database credentials
+    """
+
     def __init__(self, base_url: str, config_path: str):
+        """Inherit base_url and config_path from SpaceXTapBase"""
         super().__init__(base_url, config_path)
-    
+
     def fetch_launches(self) -> None:
-        """
-        Fetch and process launches data from SpaceX API with Snowflake-compatible schema.
-        """
-        
-        stream_name="STG_SPACEX_DATA_LAUNCHES"
-        
+        """Fetch and process launches data from SpaceX API with \
+            Snowflake-compatible schema."""
+        stream_name = "STG_SPACEX_DATA_LAUNCHES"
         try:
-            
             # Fetch data from the launches endpoint
             response = requests.get(self.base_url + "launches")
             response.raise_for_status()
             launches_data = response.json()
-        
+
             # Schema definition with Snowflake-compatible types
             schema = {
                 "type": "object",
                 "properties": {
                     "LAUNCH_ID": {
                         "type": ["string", "null"],
-                        "description": "Unique identifier for the launch"
+                        "description": "Unique identifier for the launch",
                     },
-                    "FLIGHT_NUMBER": {
-                        "type": ["integer", "null"]
-                    },
-                    "NAME": {
-                        "type": ["string", "null"],
-                        "maxLength": 256
-                    },
-                    "DATE_UTC": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "DATE_UNIX": {
-                        "type": ["integer", "null"]
-                    },
-                    "DATE_LOCAL": {
-                        "type": ["string", "null"]
-                    },
-                    "DATE_PRECISION": {
-                        "type": ["string", "null"]
-                    },
+                    "FLIGHT_NUMBER": {"type": ["integer", "null"]},
+                    "NAME": {"type": ["string", "null"], "maxLength": 256},
+                    "DATE_UTC": {"type": ["string", "null"], "format": "date-time"},
+                    "DATE_UNIX": {"type": ["integer", "null"]},
+                    "DATE_LOCAL": {"type": ["string", "null"]},
+                    "DATE_PRECISION": {"type": ["string", "null"]},
                     "STATIC_FIRE_DATE_UTC": {
                         "type": ["string", "null"],
-                        "format": "date-time"
+                        "format": "date-time",
                     },
-                    "STATIC_FIRE_DATE_UNIX": {
-                        "type": ["integer", "null"]
-                    },
-                    "NET": {
-                        "type": ["boolean", "null"]
-                    },
-                    "WINDOW": {
-                        "type": ["integer", "null"]
-                    },
-                    "ROCKET": {
-                        "type": ["string", "null"]
-                    },
-                    "SUCCESS": {
-                        "type": ["boolean", "null"]
-                    },
+                    "STATIC_FIRE_DATE_UNIX": {"type": ["integer", "null"]},
+                    "NET": {"type": ["boolean", "null"]},
+                    "WINDOW": {"type": ["integer", "null"]},
+                    "ROCKET": {"type": ["string", "null"]},
+                    "SUCCESS": {"type": ["boolean", "null"]},
                     "FAILURES": {
                         "type": ["string", "null"],
-                        "description": "Array of failure details stored as JSON string"
+                        "description": "Array of failure details stored as JSON string",
                     },
-                    "UPCOMING": {
-                        "type": ["boolean", "null"]
-                    },
-                    "DETAILS": {
-                        "type": ["string", "null"]
-                    },
+                    "UPCOMING": {"type": ["boolean", "null"]},
+                    "DETAILS": {"type": ["string", "null"]},
                     "FAIRINGS": {
                         "type": ["string", "null"],
-                        "description": "Fairings details stored as JSON string"
+                        "description": "Fairings details stored as JSON string",
                     },
                     "CREW": {
                         "type": ["string", "null"],
-                        "description": "Array of crew details stored as JSON string"
+                        "description": "Array of crew details stored as JSON string",
                     },
                     "SHIPS": {
                         "type": ["string", "null"],
-                        "description": "Array of ship IDs stored as JSON string"
+                        "description": "Array of ship IDs stored as JSON string",
                     },
                     "CAPSULES": {
                         "type": ["string", "null"],
-                        "description": "Array of capsule IDs stored as JSON string"
+                        "description": "Array of capsule IDs stored as JSON string",
                     },
                     "PAYLOADS": {
                         "type": ["string", "null"],
-                        "description": "Array of payload IDs stored as JSON string"
+                        "description": "Array of payload IDs stored as JSON string",
                     },
-                    "LAUNCHPAD": {
-                        "type": ["string", "null"]
-                    },
+                    "LAUNCHPAD": {"type": ["string", "null"]},
                     "CORES": {
                         "type": ["string", "null"],
-                        "description": "Array of core details stored as JSON string"
+                        "description": "Array of core details stored as JSON string",
                     },
                     "LINKS": {
                         "type": ["string", "null"],
-                        "description": "Related links stored as JSON string"
+                        "description": "Related links stored as JSON string",
                     },
-                    "AUTO_UPDATE": {
-                        "type": ["boolean", "null"]
-                    },
-                    "LAUNCH_LIBRARY_ID": {
-                        "type": ["string", "null"]
-                    },
+                    "AUTO_UPDATE": {"type": ["boolean", "null"]},
+                    "LAUNCH_LIBRARY_ID": {"type": ["string", "null"]},
                     "CREATED_AT": {"type": ["string", "null"]},
                     "UPDATED_AT": {"type": ["string", "null"]},
-                    "RAW_DATA": {"type": ["string", "null"]}
-                }
+                    "RAW_DATA": {"type": ["string", "null"]},
+                },
             }
-        
+
             # Write schema
             singer.write_schema(
-                stream_name=stream_name,
-                schema=schema,
-                key_properties=["LAUNCH_ID"]
+                stream_name=stream_name, schema=schema, key_properties=["LAUNCH_ID"]
             )
-        
+
             # Get current time with timezone
             current_time = self.get_current_time()
             current_time_str = current_time.isoformat()
-        
+
             # Process and write each launch record
             for launch in launches_data:
                 try:
@@ -166,41 +136,35 @@ class LaunchesTap(SpaceXTapBase):
                         "LAUNCH_LIBRARY_ID": launch.get("launch_library_id"),
                         "CREATED_AT": current_time_str,
                         "UPDATED_AT": current_time_str,
-                        "RAW_DATA": json.dumps(launch)
+                        "RAW_DATA": json.dumps(launch),
                     }
-            
+
                     # Write record with timezone-aware timestamp
                     singer.write_record(
-                        stream_name=stream_name,
-                        record=transformed_launch
+                        stream_name=stream_name, record=transformed_launch
                     )
                 except Exception as transform_error:
                     self.log_error(
                         table_name=stream_name,
-                        error_message=f"Data transformation error: {str(transform_error)}",
-                        error_data=launch
+                        error_message=f"Data transformation error: \
+                            {str(transform_error)}",
+                        error_data=launch,
                     )
                     continue  # Continue processing other launches
-                
-        
+
             # Write state
-            state = {
-                "STG_SPACEX_DATA_LAUNCHES": {
-                    "last_sync": current_time_str
-                }
-            }
+            state = {"STG_SPACEX_DATA_LAUNCHES": {"last_sync": current_time_str}}
             singer.write_state(state)
-            
+
         except requests.exceptions.RequestException as api_error:
             self.log_error(
                 table_name=stream_name,
-                error_message=f"API request error: {str(api_error)}"
+                error_message=f"API request error: {str(api_error)}",
             )
             raise
 
         except Exception as e:
             self.log_error(
-                table_name=stream_name,
-                error_message=f"Unexpected error: {str(e)}"
+                table_name=stream_name, error_message=f"Unexpected error: {str(e)}"
             )
             raise

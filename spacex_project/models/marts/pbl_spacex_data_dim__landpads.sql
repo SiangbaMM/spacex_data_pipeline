@@ -23,6 +23,5 @@ select
     landpad_sdc_extracted_at as landpad_sdc_extracted_at,
     landpad_created_at as landpad_created_at,
 	landpad_updated_at as landpad_updated_at
-    
-from {{ ref('stg_spacex_data__landpads') }}
 
+from {{ ref('stg_spacex_data__landpads') }}

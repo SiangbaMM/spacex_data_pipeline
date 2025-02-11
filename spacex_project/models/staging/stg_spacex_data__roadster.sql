@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_roadster'
-    ) 
+    )
 }}
 
-with roadster as 
+with roadster as
 (
-    select  
+    select
 	    roadster_id as roadster_id,
 	    name as roadster_name,
 	    launch_date_utc as roadster_launch_date_utc,
@@ -43,7 +43,7 @@ with roadster as
         _sdc_sequence as roadster_sdc_sequence,
         _sdc_table_version as roadster_sdc_table_version,
         _sdc_sync_started_at as roadster_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_roadster') }}
 )
 

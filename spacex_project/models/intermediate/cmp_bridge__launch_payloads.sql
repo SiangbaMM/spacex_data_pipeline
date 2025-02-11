@@ -20,7 +20,7 @@ with launch_payloads as (
     from {{ ref('stg_spacex_data__launches') }} launch
         inner join {{ ref('stg_spacex_data__payloads') }} payload
             on launch.launch_id = payload.payload_launch_id
-    
+
     {% if is_incremental() %}
     where payload.payload_sdc_extracted_at > (select max(bridge_launch_payload_sdc_extracted_at) from {{ this }})
     {% endif %}

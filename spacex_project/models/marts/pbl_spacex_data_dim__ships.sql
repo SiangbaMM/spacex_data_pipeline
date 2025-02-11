@@ -19,11 +19,11 @@ with ships as (
         ship_sdc_extracted_at as ship_sdc_extracted_at,
         ship_created_at as ship_created_at,
 	    ship_updated_at as ship_updated_at
-        
+
     from {{ ref('stg_spacex_data__ships') }}
 )
 
-select 
+select
     * ,
     current_timestamp() as dbt_loaded_at
 from ships

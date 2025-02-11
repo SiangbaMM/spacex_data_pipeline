@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_launchpads'
-    ) 
+    )
 }}
 
-with launchpads as 
+with launchpads as
 (
-    select    
+    select
 	    launchpad_id as launchpad_id,
 	    name as launchpad_name,
 	    full_name as launchpad_full_name,
@@ -32,7 +32,7 @@ with launchpads as
         _sdc_sequence as launchpad_sdc_sequence,
         _sdc_table_version as launchpad_sdc_table_version,
         _sdc_sync_started_at as launchpad_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_launchpads') }}
 )
 

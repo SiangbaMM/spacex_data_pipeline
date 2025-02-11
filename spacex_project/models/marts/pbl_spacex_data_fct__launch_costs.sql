@@ -70,11 +70,11 @@ final as (
         coalesce(launch_ships.bridge_launch_ship_count, 0) as ship_count,
         launches.launch_sdc_extracted_at as launch_sdc_extracted_at,
         current_timestamp() as dbt_loaded_at
-        
+
     from launches
-    left join launch_cores 
+    left join launch_cores
         on launches.launch_id = launch_cores.bridge_launch_core_launch_id
-    left join launch_crew 
+    left join launch_crew
         on launches.launch_id = launch_crew.bridge_launch_crew_launch_id
     left join launch_payloads
         on launches.launch_id = launch_payloads.bridge_launch_payload_launch_id

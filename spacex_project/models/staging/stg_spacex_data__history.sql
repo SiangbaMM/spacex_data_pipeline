@@ -1,12 +1,12 @@
 
 {{ config(
     alias = 'vw_stg_spacex_data_history'
-    ) 
+    )
 }}
 
-with history as 
+with history as
 (
-    select 
+    select
         history_id as history_id,
 	    title as history_title,
 	    event_date_utc as history_event_date_utc,
@@ -24,7 +24,7 @@ with history as
         _sdc_sequence as history_sdc_sequence,
         _sdc_table_version as history_sdc_table_version,
         _sdc_sync_started_at as history_sdc_sync_started_at
-    
+
     from {{ source('stg_spacex_data', 'stg_spacex_data_history') }}
 )
 

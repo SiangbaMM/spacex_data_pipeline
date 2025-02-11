@@ -17,6 +17,5 @@ select
     capsule_sdc_extracted_at as capsule_sdc_extracted_at,
     capsule_created_at as capsule_created_at,
 	capsule_updated_at as capsule_updated_at
-    
-from {{ ref('stg_spacex_data__capsules') }}
 
+from {{ ref('stg_spacex_data__capsules') }}

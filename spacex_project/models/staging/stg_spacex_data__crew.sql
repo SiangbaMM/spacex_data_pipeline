@@ -1,11 +1,11 @@
 {{ config(
     alias = 'vw_stg_spacex_data_crew'
-    ) 
+    )
 }}
 
-with crew as 
+with crew as
 (
-    select 
+    select
 	    crew_id as crew_id,
 	    name as crew_name,
 	    agency as crew_agency,
