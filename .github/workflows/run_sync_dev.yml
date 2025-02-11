@@ -5,4 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print steps
-        run: echo "Hello world !"
+        run: |
+          echo "Hello World !"
+          echo "Journey start ..."
