@@ -8,9 +8,6 @@ class StarlinkTap(SpaceXTapBase):
     def fetch_starlink(self) -> None:
         """
         Fetch and process Starlink satellites data from SpaceX API with Snowflake-compatible schema.
-        
-        Args:
-            base_url (str): Base URL for the SpaceX API
         """
         
         stream_name="STG_SPACEX_DATA_STARLINK"
@@ -175,7 +172,7 @@ class StarlinkTap(SpaceXTapBase):
 
             # Write state
             state = {
-                "STARLINK": {
+                "STG_SPACEX_DATA_STARLINK": {
                     "last_sync": current_time_str
                 }
             }

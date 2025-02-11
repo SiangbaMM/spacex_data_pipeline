@@ -1,5 +1,3 @@
-use role sysadmin;
-
 -- Étape 1 : Création des rôles spécifiques pour chaque base de données
 USE ROLE SECURITYADMIN;
 
@@ -21,7 +19,11 @@ GRANT ROLE spacex_data_uat_secadmin TO ROLE SYSADMIN;
 -- Étape 2 : Création des bases de données
 USE ROLE SYSADMIN;
 
-CREATE DATABASE IF NOT EXISTS spacex_data_uat COMMENT = 'SpaceX Data database of development environment';
+CREATE DATABASE IF NOT EXISTS spacex_data_uat COMMENT = 'SpaceX Data database of qualification environment';
+
+GRANT OWNERSHIP ON DATABASE spacex_data_uat TO ROLE spacex_data_uat_sysadmin
+WITH
+    GRANT OPTION;
 
 -- Étape 3 : Création des warehouses standards pour chaque base de données
 CREATE WAREHOUSE IF NOT EXISTS spacex_data_uat_load_wh
@@ -36,23 +38,6 @@ CREATE WAREHOUSE IF NOT EXISTS spacex_data_uat_ad_hoc_wh
 WITH
     WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 10 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE COMMENT = 'Space X warehouse for analysis queries';
 
--- Étape 4 : Attribution des privilèges pour 'spacex_data_dev'
-USE ROLE SECURITYADMIN;
-
-GRANT CREATE USER,
-CREATE ROLE ON ACCOUNT TO ROLE spacex_data_uat_secadmin;
-
-GRANT USAGE,
-MONITOR ON DATABASE spacex_data_uat TO ROLE spacex_data_uat_secadmin;
-
-GRANT CREATE SCHEMA ON DATABASE spacex_data_uat TO ROLE spacex_data_uat_sysadmin
-WITH
-    MANAGED ACCESS;
-
-USE ROLE SYSADMIN;
-
-GRANT OWNERSHIP ON DATABASE spacex_data_uat TO ROLE spacex_data_uat_sysadmin REVOKE CURRENT GRANTS;
-
 -- Attribution des privilege sur les warehouse
 GRANT OWNERSHIP ON WAREHOUSE spacex_data_uat_load_wh TO ROLE spacex_data_uat_sysadmin REVOKE CURRENT GRANTS;
 
@@ -60,5 +45,12 @@ GRANT OWNERSHIP ON WAREHOUSE spacex_data_uat_transform_wh TO ROLE spacex_data_ua
 
 GRANT OWNERSHIP ON WAREHOUSE spacex_data_uat_ad_hoc_wh TO ROLE spacex_data_uat_sysadmin REVOKE CURRENT GRANTS;
 
+-- Étape 4 : Attribution des privilèges pour 'spacex_data_uat'
+USE ROLE SECURITYADMIN;
+
+GRANT CREATE USER,
+CREATE ROLE ON ACCOUNT TO ROLE spacex_data_uat_secadmin;
+
+--GRANT USAGE, MONITOR ON DATABASE spacex_data_uat TO ROLE spacex_data_uat_secadmin;
 -- Étape 7 : Vérification des privilèges
-SHOW GRANTS ON DATABASE spacex_data_dev;
+SHOW GRANTS ON DATABASE spacex_data_uat;

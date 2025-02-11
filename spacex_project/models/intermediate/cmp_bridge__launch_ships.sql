@@ -1,6 +1,6 @@
 {{
     config(
-        alias='bridge_launch_ship',
+        alias='cmp_spacex_data_bridge_launch_ship',
         unique_key='bridge_launch_ship_launch_ship_id'
     )
 }}

@@ -9,7 +9,10 @@ class CapsulesTap(SpaceXTapBase):
         super().__init__(base_url, config_path)
 
     def fetch_capsules(self):
-        """Fetch and process capsules data."""
+        """
+        Fetch and process capsules data.
+        """
+        
         stream_name = "STG_SPACEX_DATA_CAPSULES"
         
         try:
@@ -83,7 +86,7 @@ class CapsulesTap(SpaceXTapBase):
             
             # Write state
             state = {
-                "CAPSULES": {
+                "STG_SPACEX_DATA_CAPSULES": {
                     "last_sync": current_time_str
                 }
             }

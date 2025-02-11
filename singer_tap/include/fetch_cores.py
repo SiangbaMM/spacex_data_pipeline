@@ -9,7 +9,10 @@ class CoresTap(SpaceXTapBase):
         super().__init__(base_url, config_path)
 
     def fetch_cores(self):
-        """Fetch and process core spacex data."""
+        """
+        Fetch and process core spacex data.
+        """
+        
         stream_name = "STG_SPACEX_DATA_CORES"
         
         try:
@@ -113,7 +116,7 @@ class CoresTap(SpaceXTapBase):
         
             # Write state
             state = {
-                "CORES": {
+                "STG_SPACEX_DATA_CORES": {
                     "last_sync": current_time.isoformat()
                 }
             }

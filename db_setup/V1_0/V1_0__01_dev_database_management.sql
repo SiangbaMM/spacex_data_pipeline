@@ -1,5 +1,3 @@
-use role sysadmin;
-
 -- Étape 1 : Création des rôles spécifiques pour chaque base de données
 USE ROLE SECURITYADMIN;
 
@@ -23,6 +21,10 @@ USE ROLE SYSADMIN;
 
 CREATE DATABASE IF NOT EXISTS spacex_data_dev COMMENT = 'SpaceX Data database of development environment';
 
+GRANT OWNERSHIP ON DATABASE spacex_data_dev TO ROLE spacex_data_dev_sysadmin
+WITH
+    GRANT OPTION;
+
 -- Étape 3 : Création des warehouses standards pour chaque base de données
 CREATE WAREHOUSE IF NOT EXISTS spacex_data_dev_load_wh
 WITH
@@ -36,23 +38,6 @@ CREATE WAREHOUSE IF NOT EXISTS spacex_data_dev_ad_hoc_wh
 WITH
     WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 10 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE COMMENT = 'Space X warehouse for analysis queries';
 
--- Étape 4 : Attribution des privilèges pour 'spacex_data_dev'
-USE ROLE SECURITYADMIN;
-
-GRANT CREATE USER,
-CREATE ROLE ON ACCOUNT TO ROLE spacex_data_dev_secadmin;
-
-GRANT USAGE,
-MONITOR ON DATABASE spacex_data_dev TO ROLE spacex_data_dev_secadmin;
-
-GRANT CREATE SCHEMA ON DATABASE spacex_data_dev TO ROLE spacex_data_dev_sysadmin
-WITH
-    MANAGED ACCESS;
-
-USE ROLE SYSADMIN;
-
-GRANT OWNERSHIP ON DATABASE spacex_data_dev TO ROLE spacex_data_dev_sysadmin REVOKE CURRENT GRANTS;
-
 -- Attribution des privilege sur les warehouse
 GRANT OWNERSHIP ON WAREHOUSE spacex_data_dev_load_wh TO ROLE spacex_data_dev_sysadmin REVOKE CURRENT GRANTS;
 
@@ -60,5 +45,12 @@ GRANT OWNERSHIP ON WAREHOUSE spacex_data_dev_transform_wh TO ROLE spacex_data_de
 
 GRANT OWNERSHIP ON WAREHOUSE spacex_data_dev_ad_hoc_wh TO ROLE spacex_data_dev_sysadmin REVOKE CURRENT GRANTS;
 
+-- Étape 4 : Attribution des privilèges pour 'spacex_data_dev'
+USE ROLE SECURITYADMIN;
+
+GRANT CREATE USER,
+CREATE ROLE ON ACCOUNT TO ROLE spacex_data_dev_secadmin;
+
+--GRANT MANAGE GRANTS ON ACCOUNT TO ROLE spacex_data_dev_sysadmin;
 -- Étape 7 : Vérification des privilèges
 SHOW GRANTS ON DATABASE spacex_data_dev;

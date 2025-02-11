@@ -9,7 +9,6 @@ class LandpadsTap(SpaceXTapBase):
     def fetch_landpads(self) -> None:
         """
         Fetch and process landpads data from SpaceX API with Snowflake-compatible schema.
-        
         """
         
         stream_name = "STG_SPACEX_DATA_LANDPADS"
@@ -150,7 +149,7 @@ class LandpadsTap(SpaceXTapBase):
         
             # Write state
             state = {
-                "LANDPADS": {
+                "STG_SPACEX_DATA_LANDPADS": {
                     "last_sync": current_time_str
                 }
             }
