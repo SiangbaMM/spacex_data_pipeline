@@ -2,7 +2,8 @@ import json
 
 import requests  # type: ignore
 import singer  # type: ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from .spacex_tap_base import SpaceXTapBase
 
 
 class RoadsterTap(SpaceXTapBase):
@@ -128,6 +129,9 @@ class RoadsterTap(SpaceXTapBase):
                 record=transformed_roadster,
                 time_extracted=current_time,
             )
+
+            # Insert data into Snowflake
+            self.insert_into_snowflake(stream_name, transformed_roadster)
 
             # Write state
             state = {"STG_SPACEX_DATA_ROADSTER": {"last_sync": current_time_str}}

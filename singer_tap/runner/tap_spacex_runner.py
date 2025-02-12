@@ -1,21 +1,26 @@
 import logging
+import sys
 import time
+from pathlib import Path
 
-from include.fetch_capsules import CapsulesTap
-from include.fetch_company import CompanyTap
-from include.fetch_cores import CoresTap
-from include.fetch_crew import CrewTap
-from include.fetch_dragons import DragonsTap
-from include.fetch_history import HistoryTap
-from include.fetch_landpads import LandpadsTap
-from include.fetch_launches import LaunchesTap
-from include.fetch_launchpads import LaunchpadsTap
-from include.fetch_payloads import PayloadsTap
-from include.fetch_roadster import RoadsterTap
-from include.fetch_rockets import RocketsTap
-from include.fetch_ships import shipsTap
-from include.fetch_starlink import StarlinkTap
-from include.spacex_tap_base import SpaceXTapBase
+# Add the parent directory to sys.path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from include.fetch_capsules import CapsulesTap  # type: ignore
+from include.fetch_company import CompanyTap  # type: ignore
+from include.fetch_cores import CoresTap  # type: ignore
+from include.fetch_crew import CrewTap  # type: ignore
+from include.fetch_dragons import DragonsTap  # type: ignore
+from include.fetch_history import HistoryTap  # type: ignore
+from include.fetch_landpads import LandpadsTap  # type: ignore
+from include.fetch_launches import LaunchesTap  # type: ignore
+from include.fetch_launchpads import LaunchpadsTap  # type: ignore
+from include.fetch_payloads import PayloadsTap  # type: ignore
+from include.fetch_roadster import RoadsterTap  # type: ignore
+from include.fetch_rockets import RocketsTap  # type: ignore
+from include.fetch_ships import ShipsTap  # type: ignore
+from include.fetch_starlink import StarlinkTap  # type: ignore
+from include.spacex_tap_base import SpaceXTapBase  # type: ignore
 
 # Configure logging
 logging.basicConfig(
@@ -148,9 +153,9 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
 
     # Third set of functions - Mission and location data
     def fetch_ships(self):
-        """Set fetch_ships function from shipsTap class"""
+        """Set fetch_ships function from ShipsTap class"""
         logger.info("Fetching ships data")
-        ships_tap = shipsTap(self.base_url, self.config_path)
+        ships_tap = ShipsTap(self.base_url, self.config_path)
         try:
             ships_tap.fetch_ships()
         finally:
@@ -166,7 +171,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
             starlink_tap.close_connection()
 
     def run_first_set(self):
-        """Run first set of the following entity functions
+        """Run first set of the following entity functions.
 
         Functions list :
         - company

@@ -3,7 +3,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest  # type: ignore
-from include.fetch_rockets import RocketsTap
+
+from singer_tap.include.fetch_rockets import RocketsTap
 
 
 @pytest.fixture

@@ -2,7 +2,8 @@ import json
 
 import requests  # type: ignore
 import singer  # type: ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from .spacex_tap_base import SpaceXTapBase
 
 
 class CapsulesTap(SpaceXTapBase):
@@ -17,16 +18,42 @@ class CapsulesTap(SpaceXTapBase):
     def __init__(self, base_url: str, config_path: str):
         """Inherit base_url and config_path from SpaceXTapBase"""
         super().__init__(base_url, config_path)
+        self.set_state({"bookmarks": {"capsules": {"last_record": None}}})
 
     def fetch_capsules(self):
         """Fetch and process capsules data."""
         stream_name = "STG_SPACEX_DATA_CAPSULES"
 
         try:
-            # Fetch data from API
-            response = requests.get(self.base_url + "capsules")
-            response.raise_for_status()
-            capsules_data = response.json()
+            # Fetch data from API with rate limit handling
+            max_retries = 3
+            retry_count = 0
+
+            while retry_count < max_retries:
+                response = requests.get(self.base_url + "capsules")
+
+                if response.status_code == 429:  # Rate limit hit
+                    retry_after = int(response.headers.get("Retry-After", 2))
+                    import time
+
+                    time.sleep(retry_after)
+                    retry_count += 1
+                    continue
+
+                response.raise_for_status()
+                try:
+                    capsules_data = response.json()
+                    break
+                except json.JSONDecodeError as e:
+                    if retry_count < max_retries - 1:
+                        retry_count += 1
+                        continue
+                    self.log_error(
+                        table_name="CAPSULES",
+                        error_message="Invalid JSON response from API",
+                        error_data={"response_text": response.text, "error": str(e)},
+                    )
+                    raise
 
             # Schema definition for capsules data
             schema = {
@@ -74,12 +101,15 @@ class CapsulesTap(SpaceXTapBase):
                         "RAW_DATA": json.dumps(capsule),
                     }
 
-                    # Write record
+                    # Write record to Singer output
                     singer.write_record(
                         stream_name=stream_name,
                         record=transformed_capsule,
                         time_extracted=current_time,
                     )
+
+                    # Insert data into Snowflake
+                    self.insert_into_snowflake(stream_name, transformed_capsule)
 
                 except Exception as transform_error:
                     self.log_error(
@@ -90,9 +120,11 @@ class CapsulesTap(SpaceXTapBase):
                     )
                     continue  # Continue processing other capsules
 
-            # Write state
-            state = {"STG_SPACEX_DATA_CAPSULES": {"last_sync": current_time_str}}
-            singer.write_state(state)
+            # Update and write state
+            current_state = self.get_state()
+            current_state["bookmarks"]["capsules"]["last_record"] = current_time_str
+            self.set_state(current_state)
+            singer.write_state({"CAPSULES": {"last_sync": current_time_str}})
 
         except requests.exceptions.RequestException as api_error:
             self.log_error(

@@ -2,7 +2,8 @@ import json
 
 import requests  # type: ignore
 import singer  # type: ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from .spacex_tap_base import SpaceXTapBase
 
 
 class CoresTap(SpaceXTapBase):
@@ -91,6 +92,9 @@ class CoresTap(SpaceXTapBase):
                         record=transformed_core,
                     )
 
+                    # Insert data into Snowflake
+                    self.insert_into_snowflake(stream_name, transformed_core)
+
                 except Exception as transform_error:
                     self.log_error(
                         table_name=stream_name,
@@ -98,7 +102,7 @@ class CoresTap(SpaceXTapBase):
                             {str(transform_error)}",
                         error_data=core,
                     )
-                continue  # Continue processing other capsules
+                    continue  # Continue processing other cores
 
             # Write state
             state = {"STG_SPACEX_DATA_CORES": {"last_sync": current_time.isoformat()}}

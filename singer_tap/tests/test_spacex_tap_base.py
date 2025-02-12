@@ -3,7 +3,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest  # type:ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from singer_tap.include.spacex_tap_base import SpaceXTapBase
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def spacex_tap_base():
         SpaceXTapBase: Class instance
     """
     return SpaceXTapBase(
-        base_url="https://api.spacexdata.com/v4/", config_path="config.json"
+        base_url="https://api.spacexdata.com/v4/", config_path="config_snowflake.json"
     )
 
 
@@ -47,7 +48,7 @@ def test_log_error(spacex_tap_base, caplog):
 def test_base_url_initialization():
     """Test base URL initialization"""
     base_url = "https://test.api.com/"
-    config_path = "test_config.json"
+    config_path = "test_config_snowflake.json"
     tap = SpaceXTapBase(base_url=base_url, config_path=config_path)
 
     assert tap.base_url == base_url
@@ -57,7 +58,7 @@ def test_base_url_initialization():
 def test_base_url_trailing_slash():
     """Test base URL automatically adds trailing slash if missing"""
     base_url = "https://test.api.com"
-    tap = SpaceXTapBase(base_url=base_url, config_path="config.json")
+    tap = SpaceXTapBase(base_url=base_url, config_path="config_snowflake.json")
 
     assert tap.base_url == base_url + "/"
 

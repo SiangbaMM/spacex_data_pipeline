@@ -2,7 +2,8 @@ import json
 
 import requests  # type: ignore
 import singer  # type: ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from .spacex_tap_base import SpaceXTapBase
 
 
 class LaunchesTap(SpaceXTapBase):
@@ -143,6 +144,9 @@ class LaunchesTap(SpaceXTapBase):
                     singer.write_record(
                         stream_name=stream_name, record=transformed_launch
                     )
+
+                    # Insert data into Snowflake
+                    self.insert_into_snowflake(stream_name, transformed_launch)
                 except Exception as transform_error:
                     self.log_error(
                         table_name=stream_name,

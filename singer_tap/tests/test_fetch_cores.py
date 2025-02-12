@@ -3,7 +3,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest  # type: ignore
-from include.fetch_cores import CoresTap
+
+from singer_tap.include.fetch_cores import CoresTap
 
 # Sample API response data
 SAMPLE_CORE_DATA = [
@@ -81,7 +82,7 @@ def test_fetch_cores_successful(cores_tap, mock_current_time):
         # Verify schema write
         mock_write_schema.assert_called_once()
         schema_call = mock_write_schema.call_args[1]
-        assert schema_call["stream_name"] == "CORES"
+        assert schema_call["stream_name"] == "STG_SPACEX_DATA_CORES"
         assert schema_call["key_properties"] == ["CORE_ID"]
 
         # Verify record write
@@ -108,8 +109,8 @@ def test_fetch_cores_successful(cores_tap, mock_current_time):
         # Verify state write
         mock_write_state.assert_called_once()
         state_call = mock_write_state.call_args[1]
-        assert "CORES" in state_call["state"]
-        assert "last_sync" in state_call["state"]["CORES"]
+        assert "STG_SPACEX_DATA_CORES" in state_call["state"]
+        assert "last_sync" in state_call["state"]["STG_SPACEX_DATA_CORES"]
 
 
 def test_fetch_cores_api_error(cores_tap):
@@ -331,7 +332,9 @@ def test_fetch_cores_state_management(cores_tap, mock_current_time):
     ):
         # Mock existing state with bookmark
         mock_get_state.return_value = {
-            "bookmarks": {"cores": {"last_record": "2024-01-01T00:00:00Z"}}
+            "bookmarks": {
+                "STG_SPACEX_DATA_CORES": {"last_record": "2024-01-01T00:00:00Z"}
+            }
         }
 
         # Mock API response
@@ -345,4 +348,4 @@ def test_fetch_cores_state_management(cores_tap, mock_current_time):
         # Verify state was updated
         mock_write_state.assert_called()
         new_state = mock_write_state.call_args[1]["state"]
-        assert new_state["CORES"]["last_sync"] > "2024-01-01T00:00:00Z"
+        assert new_state["STG_SPACEX_DATA_CORES"]["last_sync"] > "2024-01-01T00:00:00Z"

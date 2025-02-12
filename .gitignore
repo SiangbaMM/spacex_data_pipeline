@@ -1,8 +1,9 @@
 .git
 .venv
 .vscode
-config*
+**/config*
 target-snowflake--*
 logs
 training/
-__pycache__/
+**/__pycache__/
+**/__init__.py

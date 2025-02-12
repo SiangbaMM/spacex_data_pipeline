@@ -1,0 +1,9 @@
+Metadata-Version: 2.2
+Name: singer_tap
+Version: 0.1.0
+Requires-Dist: singer-python==6.1.0
+Requires-Dist: jsonschema<3.0.0,>=2.6.0
+Requires-Dist: requests
+Requires-Dist: snowflake-connector-python
+Requires-Dist: pytz
+Dynamic: requires-dist

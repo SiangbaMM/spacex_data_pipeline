@@ -3,7 +3,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest  # type: ignore
-from include.fetch_crew import CrewTap
+
+from singer_tap.include.fetch_crew import CrewTap
 
 
 @pytest.fixture
@@ -52,7 +53,7 @@ def test_fetch_crew_successful():
         patch("singer.write_schema") as mock_write_schema,
         patch("singer.write_record") as mock_write_record,
         patch("singer.write_state") as mock_write_state,
-        patch("tap_spacex.get_current_time") as mock_time,
+        patch("get_current_time") as mock_time,
     ):
         # Mock current time
         mock_time.return_value = datetime(2024, 1, 1, 12, 0, 0)

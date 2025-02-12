@@ -2,7 +2,8 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest  # type: ignore
-from include.fetch_company import CompanyTap
+
+from singer_tap.include.fetch_company import CompanyTap
 
 
 @pytest.fixture
@@ -231,13 +232,13 @@ def test_fetch_company_state_management():
         # Verify state was written with timestamp
         mock_write_state.assert_called_once()
         state_call = mock_write_state.call_args[1]
-        assert "company" in state_call["state"]
-        assert "last_sync" in state_call["state"]["company"]
+        assert "STG_SPACEX_DATA_COMPANY" in state_call["state"]
+        assert "last_sync" in state_call["state"]["STG_SPACEX_DATA_COMPANY"]
 
         # Verify timestamp format
         from datetime import datetime
 
-        timestamp = state_call["state"]["company"]["last_sync"]
+        timestamp = state_call["state"]["STG_SPACEX_DATA_COMPANY"]["last_sync"]
         try:
             datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
         except ValueError:

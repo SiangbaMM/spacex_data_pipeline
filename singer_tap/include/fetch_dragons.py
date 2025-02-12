@@ -2,7 +2,8 @@ import json
 
 import requests  # type: ignore
 import singer  # type: ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from .spacex_tap_base import SpaceXTapBase
 
 
 class DragonsTap(SpaceXTapBase):
@@ -156,6 +157,9 @@ class DragonsTap(SpaceXTapBase):
                         record=transformed_dragon,
                     )
 
+                    # Insert data into Snowflake
+                    self.insert_into_snowflake(stream_name, transformed_dragon)
+
                 except Exception as transform_error:
                     self.log_error(
                         table_name=stream_name,
@@ -166,7 +170,7 @@ class DragonsTap(SpaceXTapBase):
                     continue  # Continue processing other capsules
 
             # Write state
-            state = {"DRAGONS": {"last_sync": current_time_str}}
+            state = {"STG_SPACEX_DATA_DRAGONS": {"last_sync": current_time_str}}
             singer.write_state(state)
 
         except requests.exceptions.RequestException as api_error:

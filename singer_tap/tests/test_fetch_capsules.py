@@ -3,7 +3,8 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest  # type: ignore
-from include.fetch_capsules import CapsulesTap
+
+from singer_tap.include.fetch_capsules import CapsulesTap
 
 # Sample API response data
 SAMPLE_CAPSULE_DATA = [
@@ -81,7 +82,7 @@ def test_fetch_capsules_successful(capsules_tap, mock_current_time):
         # Verify state write
         mock_write_state.assert_called_once()
         state_call = mock_write_state.call_args[1]
-        assert "CAPSULES" in state_call["state"]
+        assert "STG_SPACEX_DATA_CAPSULES" in state_call
         assert "last_sync" in state_call["state"]["CAPSULES"]
 
 
@@ -271,7 +272,7 @@ def test_fetch_capsules_malformed_response(capsules_tap):
         # Verify error was logged
         mock_log_error.assert_called_once()
         error_call = mock_log_error.call_args[1]
-        assert error_call["table_name"] == "STG_SPACEX_DATA_CAPSULES"
+        assert error_call["table_name"] == "CAPSULES"
         assert "Invalid JSON response" in error_call["error_message"]
 
 

@@ -2,10 +2,11 @@ import json
 
 import requests  # type: ignore
 import singer  # type: ignore
-from include.spacex_tap_base import SpaceXTapBase
+
+from .spacex_tap_base import SpaceXTapBase
 
 
-class shipsTap(SpaceXTapBase):
+class ShipsTap(SpaceXTapBase):
     """shipsTap is a SpaceXTapBase sub class in charge of \
         SpaceX ships entity ingestion
 
@@ -149,6 +150,9 @@ class shipsTap(SpaceXTapBase):
                         record=transformed_ship,
                         time_extracted=current_time,
                     )
+
+                    # Insert data into Snowflake
+                    self.insert_into_snowflake(stream_name, transformed_ship)
 
                 except Exception as transform_error:
                     self.log_error(
