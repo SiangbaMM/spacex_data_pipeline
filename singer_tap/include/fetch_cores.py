@@ -19,7 +19,7 @@ class CoresTap(SpaceXTapBase):
         """Inherit base_url and config_path from SpaceXTapBase"""
         super().__init__(base_url, config_path)
 
-    def fetch_cores(self):
+    def fetch_cores(self) -> None:
         """Fetch and process core spacex data."""
         stream_name = "STG_SPACEX_DATA_CORES"
 
@@ -72,13 +72,25 @@ class CoresTap(SpaceXTapBase):
                     transformed_core = {
                         "CORE_ID": core.get("id"),
                         "SERIAL": core.get("serial"),
-                        "BLOCK": core.get("block"),
+                        "BLOCK": self._prepare_value_for_snowflake(
+                            core.get("block"), is_numeric=True
+                        ),
                         "STATUS": core.get("status"),
-                        "REUSE_COUNT": core.get("reuse_count"),
-                        "RTLS_ATTEMPTS": core.get("rtls_attempts"),
-                        "RTLS_LANDINGS": core.get("rtls_landings"),
-                        "ASDS_ATTEMPTS": core.get("asds_attempts"),
-                        "ASDS_LANDINGS": core.get("asds_landings"),
+                        "REUSE_COUNT": self._prepare_value_for_snowflake(
+                            core.get("reuse_count"), is_numeric=True
+                        ),
+                        "RTLS_ATTEMPTS": self._prepare_value_for_snowflake(
+                            core.get("rtls_attempts"), is_numeric=True
+                        ),
+                        "RTLS_LANDINGS": self._prepare_value_for_snowflake(
+                            core.get("rtls_landings"), is_numeric=True
+                        ),
+                        "ASDS_ATTEMPTS": self._prepare_value_for_snowflake(
+                            core.get("asds_attempts"), is_numeric=True
+                        ),
+                        "ASDS_LANDINGS": self._prepare_value_for_snowflake(
+                            core.get("asds_landings"), is_numeric=True
+                        ),
                         "LAST_UPDATE": core.get("last_update"),
                         "LAUNCHES": json.dumps(core.get("launches", [])),
                         "CREATED_AT": current_time_str,

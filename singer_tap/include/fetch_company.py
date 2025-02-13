@@ -19,7 +19,7 @@ class CompanyTap(SpaceXTapBase):
         """Inherit base_url and config_path from SpaceXTapBase"""
         super().__init__(base_url, config_path)
 
-    def fetch_company(self):
+    def fetch_company(self) -> None:
         """Fetch and process company data."""
         stream_name = "STG_SPACEX_DATA_COMPANY"
 
@@ -70,16 +70,28 @@ class CompanyTap(SpaceXTapBase):
                     "ID": company_data.get("id"),
                     "NAME": company_data.get("name"),
                     "FOUNDER": company_data.get("founder"),
-                    "FOUNDED": company_data.get("founded"),
-                    "EMPLOYEES": company_data.get("employees"),
-                    "VEHICLES": company_data.get("vehicles"),
-                    "LAUNCH_SITES": company_data.get("launch_sites"),
-                    "TEST_SITES": company_data.get("test_sites"),
+                    "FOUNDED": self._prepare_value_for_snowflake(
+                        company_data.get("founded"), is_numeric=True
+                    ),
+                    "EMPLOYEES": self._prepare_value_for_snowflake(
+                        company_data.get("employees"), is_numeric=True
+                    ),
+                    "VEHICLES": self._prepare_value_for_snowflake(
+                        company_data.get("vehicles"), is_numeric=True
+                    ),
+                    "LAUNCH_SITES": self._prepare_value_for_snowflake(
+                        company_data.get("launch_sites"), is_numeric=True
+                    ),
+                    "TEST_SITES": self._prepare_value_for_snowflake(
+                        company_data.get("test_sites"), is_numeric=True
+                    ),
                     "CEO": company_data.get("ceo"),
                     "CTO": company_data.get("cto"),
                     "COO": company_data.get("coo"),
                     "CTO_PROPULSION": company_data.get("cto_propulsion"),
-                    "VALUATION": company_data.get("valuation"),
+                    "VALUATION": self._prepare_value_for_snowflake(
+                        company_data.get("valuation"), is_numeric=True
+                    ),
                     "HEADQUARTERS": company_data.get("headquarters", {}),
                     "LINKS": company_data.get("links", {}),
                     "SUMMARY": company_data.get("summary"),

@@ -1,0 +1,42 @@
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+ignore_missing_imports = true
+
+# Exclude patterns for dbt_packages
+exclude = [
+    '^spacex_project/dbt_packages/.*$',
+]
+
+# Ignore specific modules
+[[tool.mypy.overrides]]
+module = [
+    "singer.*",
+    "snowflake.*",
+    "pytz.*",
+    "ruamel.*",
+    "parametrization.*",
+    "dateutil.*",
+    "dbt.*",
+    "elementary.*"
+]
+ignore_missing_imports = true
+follow_imports = "skip"
+
+# Ignore all files in dbt_packages
+[[tool.mypy.overrides]]
+module = "spacex_project.dbt_packages.*"
+ignore_errors = true
+follow_imports = "skip"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"

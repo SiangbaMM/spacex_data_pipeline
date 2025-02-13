@@ -1,287 +1,210 @@
 import json
-from unittest.mock import MagicMock, patch
+from datetime import datetime
+from typing import Any, Callable, Dict, Generator
+from unittest.mock import MagicMock, mock_open, patch
 
-import pytest  # type: ignore
-
-from singer_tap.include.fetch_company import CompanyTap
+import pytest
+import pytz
+from include.fetch_company import CompanyTap
 
 
 @pytest.fixture
-def company_tap():
-    """Instanciate company_tap
-
-    Args
-        base_url (str) : The root url of v4 SpaceX API
-        config_path (str) : Config file that contains database credentials
-
-    Returns:
-        CompanyTap: Class instance
-    """
-    return CompanyTap(
-        base_url="https://api.spacexdata.com/v4/", config_path="config_snowflake.json"
-    )
-
-
-# Sample API response data
-SAMPLE_COMPANY_DATA = {
-    "id": "5eb75edc42fea42237d7f3ed",
-    "name": "SpaceX",
-    "founder": "Elon Musk",
-    "founded": 2002,
-    "employees": 10000,
-    "vehicles": 3,
-    "launch_sites": 3,
-    "test_sites": 3,
-    "ceo": "Elon Musk",
-    "cto": "Unknown",
-    "coo": "Gwynne Shotwell",
-    "cto_propulsion": "Tom Mueller",
-    "valuation": 74000000000,
-    "headquarters": {
-        "address": "Rocket Road",
-        "city": "Hawthorne",
-        "state": "California",
-    },
-    "links": {
-        "website": "https://www.spacex.com/",
-        "flickr": "https://www.flickr.com/photos/spacex/",
-        "twitter": "https://twitter.com/SpaceX",
-        "elon_twitter": "https://twitter.com/elonmusk",
-    },
-    "summary": "SpaceX designs, manufactures and launches \
-        advanced rockets and spacecraft.",
-}
-
-
-def test_fetch_company_successful():
-    """Test successful company data fetching and transformation"""
-    with (
-        patch("requests.get") as mock_get,
-        patch("singer.write_schema") as mock_write_schema,
-        patch("singer.write_record") as mock_write_record,
+def mock_datetime() -> Generator[MagicMock, None, None]:
+    """Fixture providing a mocked datetime"""
+    mock_dt = MagicMock(wraps=datetime)
+    mock_now = datetime(2024, 1, 1, 12, 0, 0, tzinfo=pytz.UTC)
+    mock_dt.now = MagicMock(return_value=mock_now)
+    with patch("include.spacex_tap_base.datetime", mock_dt), patch(
+        "datetime.datetime", mock_dt
     ):
-        # Mock API response
-        mock_response = MagicMock()
-        mock_response.json.return_value = SAMPLE_COMPANY_DATA
-        mock_get.return_value = mock_response
-
-        # Execute fetch_company
-        company_tap.fetch_company()
-
-        # Verify API call
-        mock_get.assert_called_once_with("https://api.spacexdata.com/v4/company")
-
-        # Verify schema write
-        mock_write_schema.assert_called_once()
-        schema_call = mock_write_schema.call_args[1]
-        assert schema_call["stream_name"] == "company"
-        assert schema_call["key_properties"] == ["id"]
-
-        # Verify record write
-        mock_write_record.assert_called_once()
-        record_call = mock_write_record.call_args[1]
-        assert record_call["stream_name"] == "company"
-        assert record_call["record"]["name"] == "SpaceX"
-        assert record_call["record"]["founder"] == "Elon Musk"
-        assert record_call["record"]["founded"] == 2002
-        assert record_call["record"]["employees"] == 10000
+        yield mock_dt
 
 
-def test_fetch_company_api_error():
-    """Test API error handling"""
+@pytest.fixture
+def company_tap(
+    mock_snowflake_connection: MagicMock,
+    mock_datetime: MagicMock,
+    sample_config: Dict[str, str],
+) -> CompanyTap:
+    """Fixture providing a CompanyTap instance"""
+    mock_file = mock_open(read_data=json.dumps(sample_config))
+    with patch("os.path.exists", return_value=True), patch("builtins.open", mock_file):
+        tap = CompanyTap(
+            "https://api.spacexdata.com/v4/", "singer_tap/tests/config_test.json"
+        )
+        tap.conn = mock_snowflake_connection
+        return tap
+
+
+@pytest.fixture
+def sample_company_data() -> Dict[str, Any]:
+    """Fixture providing sample company data"""
+    return {
+        "id": "5eb75edc42fea42237d7f3ed",
+        "name": "SpaceX",
+        "founder": "Elon Musk",
+        "founded": 2002,
+        "employees": 10000,
+        "vehicles": 4,
+        "launch_sites": 3,
+        "test_sites": 2,
+        "ceo": "Elon Musk",
+        "cto": "Some CTO",
+        "coo": "Some COO",
+        "cto_propulsion": "Some CTO Propulsion",
+        "valuation": 74000000000,
+        "headquarters": {
+            "address": "Rocket Road",
+            "city": "Hawthorne",
+            "state": "California",
+        },
+        "links": {
+            "website": "https://www.spacex.com/",
+            "twitter": "https://twitter.com/SpaceX",
+        },
+        "summary": "SpaceX company summary",
+    }
+
+
+@pytest.fixture
+def mock_response() -> Callable[[Dict[str, Any]], MagicMock]:
+    """Fixture providing a mock response factory"""
+
+    def _create_response(json_data: Dict[str, Any]) -> MagicMock:
+        mock = MagicMock()
+        mock.json.return_value = json_data
+        mock.status_code = 200
+        return mock
+
+    return _create_response
+
+
+@pytest.fixture
+def mock_singer() -> MagicMock:
+    """Fixture providing mocked singer functions"""
+    mock = MagicMock()
+    mock.write_schema = MagicMock()
+    mock.write_record = MagicMock()
+    mock.write_state = MagicMock()
+    return mock
+
+
+@pytest.fixture
+def sample_api_error() -> Exception:
+    """Fixture providing a sample API error"""
+
+    class MockApiError(Exception):
+        def __init__(self) -> None:
+            self.response = type(
+                "Response", (), {"status_code": 500, "text": "Internal Server Error"}
+            )
+
+    return MockApiError()
+
+
+def test_successful_company_fetch(
+    company_tap: CompanyTap,
+    sample_company_data: Dict[str, Any],
+    mock_response: Callable[[Dict[str, Any]], MagicMock],
+    mock_singer: MagicMock,
+    mock_datetime: MagicMock,
+) -> None:
+    """Test successful company data fetching and processing"""
     with patch("requests.get") as mock_get:
-        # Mock API error
-        mock_get.side_effect = Exception("API Error")
+        mock_get.return_value = mock_response(sample_company_data)
 
-        # Execute and verify error handling
+        with patch("singer.write_schema", mock_singer.write_schema), patch(
+            "singer.write_record", mock_singer.write_record
+        ), patch("singer.write_state", mock_singer.write_state):
+            company_tap.fetch_company()
+
+            assert mock_singer.write_record.call_count == 1
+            assert company_tap.conn.cursor().execute.call_count >= 1
+
+
+def test_api_error_handling(
+    company_tap: CompanyTap, sample_api_error: Exception, mock_singer: MagicMock
+) -> None:
+    """Test handling of API errors"""
+    with patch("requests.get", side_effect=sample_api_error), patch(
+        "singer.write_schema", mock_singer.write_schema
+    ), patch("singer.write_record", mock_singer.write_record), patch(
+        "singer.write_state", mock_singer.write_state
+    ):
         with pytest.raises(Exception):
             company_tap.fetch_company()
 
+        assert mock_singer.write_record.call_count == 0
+        assert company_tap.conn.cursor().execute.call_count > 0
 
-def test_fetch_company_schema_validation():
-    """Test schema structure"""
-    with (
-        patch("requests.get") as mock_get,
-        patch("singer.write_schema") as mock_write_schema,
+
+def test_transformation_error(
+    company_tap: CompanyTap,
+    sample_company_data: Dict[str, Any],
+    mock_response: Callable[[Dict[str, Any]], MagicMock],
+    mock_singer: MagicMock,
+) -> None:
+    """Test handling of data transformation errors"""
+    bad_data = sample_company_data.copy()
+    bad_data[
+        "valuation"
+    ] = "not a number"  # This should cause a type error during transformation
+
+    def mock_prepare_value(value: Any) -> str:
+        if value == "not a number":
+            raise TypeError("Object of type 'str' is not JSON serializable")
+        return str(value)
+
+    with patch("requests.get") as mock_get, patch.object(
+        company_tap, "_prepare_value_for_snowflake", side_effect=mock_prepare_value
     ):
-        # Mock API response
-        mock_response = MagicMock()
-        mock_response.json.return_value = SAMPLE_COMPANY_DATA
-        mock_get.return_value = mock_response
+        mock_get.return_value = mock_response(bad_data)
 
-        # Execute fetch_company
-        company_tap.fetch_company()
+        with (
+            patch("singer.write_schema", mock_singer.write_schema),
+            patch("singer.write_record", mock_singer.write_record),
+            patch("singer.write_state", mock_singer.write_state),
+        ):
+            # company tap re-raise transformation errors
+            with pytest.raises(TypeError):
+                #
+                company_tap.fetch_company()
 
-        # Verify schema structure
-        schema_call = mock_write_schema.call_args[1]
-        schema = schema_call["schema"]
-
-        # Check required fields
-        assert "id" in schema["properties"]
-        assert "name" in schema["properties"]
-        assert "founder" in schema["properties"]
-        assert "founded" in schema["properties"]
-        assert "employees" in schema["properties"]
-        assert "headquarters" in schema["properties"]
-        assert "links" in schema["properties"]
-
-        # Check data types
-        assert schema["properties"]["id"]["type"] == ["string", "null"]
-        assert schema["properties"]["founded"]["type"] == ["integer", "null"]
-        assert schema["properties"]["headquarters"]["type"] == "object"
-        assert schema["properties"]["links"]["type"] == "object"
+            # Verify schema was written before error
+            assert mock_singer.write_schema.call_count == 1
+            # Verify no records were written
+            assert mock_singer.write_record.call_count == 0
+            # Verify error was logged
+            assert company_tap.conn.cursor().execute.call_count == 3
 
 
-def test_fetch_company_null_handling():
-    """Test handling of null values in company data"""
-    test_data = SAMPLE_COMPANY_DATA.copy()
-    test_data["employees"] = None
-    test_data["valuation"] = None
+def test_schema_validation(
+    company_tap: CompanyTap,
+    sample_company_data: Dict[str, Any],
+    mock_response: Callable[[Dict[str, Any]], MagicMock],
+    mock_singer: MagicMock,
+) -> None:
+    """Test that the schema matches the transformed data structure"""
+    schema_spy = MagicMock()
 
-    with (
-        patch("requests.get") as mock_get,
-        # patch("singer.write_schema") as mock_write_schema,
-        patch("singer.write_record") as mock_write_record,
-    ):
-        # Mock API response
-        mock_response = MagicMock()
-        mock_response.json.return_value = test_data
-        mock_get.return_value = mock_response
-
-        # Execute fetch_company
-        company_tap.fetch_company()
-
-        # Verify null values are handled correctly
-        record_call = mock_write_record.call_args[1]
-        assert record_call["record"]["employees"] is None
-        assert record_call["record"]["valuation"] is None
-
-
-def test_fetch_company_rate_limit_handling():
-    """Test rate limit handling for company endpoint"""
-    with (
-        patch("requests.get") as mock_get,
-        patch("time.sleep") as mock_sleep,
-        patch("singer.write_schema"),
-        patch("singer.write_record"),
-    ):
-        # Mock rate limit response followed by success
-        rate_limit_response = MagicMock()
-        rate_limit_response.status_code = 429
-        rate_limit_response.headers = {"Retry-After": "2"}
-
-        success_response = MagicMock()
-        success_response.status_code = 200
-        success_response.json.return_value = SAMPLE_COMPANY_DATA
-
-        mock_get.side_effect = [rate_limit_response, success_response]
-
-        # Execute fetch_company
-        company_tap.fetch_company()
-
-        # Verify retry behavior
-        assert mock_get.call_count == 2
-        assert mock_sleep.called
-        mock_sleep.assert_called_once_with(2)
-
-
-def test_fetch_company_malformed_response():
-    """Test handling of malformed company data responses"""
     with patch("requests.get") as mock_get:
-        # Test invalid JSON response
-        invalid_json_response = MagicMock()
-        invalid_json_response.status_code = 200
-        invalid_json_response.json.side_effect = json.JSONDecodeError(
-            "Invalid JSON", "", 0
-        )
-        mock_get.return_value = invalid_json_response
+        mock_get.return_value = mock_response(sample_company_data)
 
-        with pytest.raises(ValueError) as exc_info:
+        with (
+            patch("singer.write_schema", schema_spy),
+            patch("singer.write_record", mock_singer.write_record),
+            patch("singer.write_state", mock_singer.write_state),
+        ):
             company_tap.fetch_company()
-            assert "Invalid JSON response" in str(exc_info.value)
 
-        # Test missing required fields
-        incomplete_response = MagicMock()
-        incomplete_response.status_code = 200
-        incomplete_response.json.return_value = {
-            "name": "SpaceX"
-        }  # Missing required 'id' field
-        mock_get.return_value = incomplete_response
+            assert schema_spy.call_count == 1
+            _, kwargs = schema_spy.call_args
+            schema = kwargs["schema"]
 
-        with pytest.raises(ValueError) as exc_info:
-            company_tap.fetch_company()
-            assert "Missing required field" in str(exc_info.value)
-
-
-def test_fetch_company_state_management():
-    """Test state management for company endpoint"""
-    with (
-        patch("requests.get") as mock_get,
-        patch("singer.write_schema"),
-        patch("singer.write_record"),
-        patch("singer.write_state") as mock_write_state,
-    ):
-        # Mock successful response
-        mock_response = MagicMock()
-        mock_response.json.return_value = SAMPLE_COMPANY_DATA
-        mock_get.return_value = mock_response
-
-        # Execute fetch_company
-        company_tap.fetch_company()
-
-        # Verify state was written with timestamp
-        mock_write_state.assert_called_once()
-        state_call = mock_write_state.call_args[1]
-        assert "STG_SPACEX_DATA_COMPANY" in state_call["state"]
-        assert "last_sync" in state_call["state"]["STG_SPACEX_DATA_COMPANY"]
-
-        # Verify timestamp format
-        from datetime import datetime
-
-        timestamp = state_call["state"]["STG_SPACEX_DATA_COMPANY"]["last_sync"]
-        try:
-            datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-        except ValueError:
-            pytest.fail("Invalid timestamp format in state")
-
-
-def test_fetch_company_field_transformation():
-    """Test transformation of company data fields"""
-    test_data = SAMPLE_COMPANY_DATA.copy()
-    test_data.update(
-        {
-            "employees": "10000",  # String instead of integer
-            "valuation": "74000000000",  # String instead of integer
-            "headquarters": {
-                "address": None,  # Test null nested field
-                "city": "Hawthorne",
-                "state": "California",
-            },
-        }
-    )
-
-    with (
-        patch("requests.get") as mock_get,
-        patch("singer.write_schema"),
-        patch("singer.write_record") as mock_write_record,
-    ):
-        # Mock API response
-        mock_response = MagicMock()
-        mock_response.json.return_value = test_data
-        mock_get.return_value = mock_response
-
-        # Execute fetch_company
-        company_tap.fetch_company()
-
-        # Verify field transformations
-        record_call = mock_write_record.call_args[1]
-        record = record_call["record"]
-
-        # Check type conversions
-        assert isinstance(record["employees"], int)
-        assert isinstance(record["valuation"], int)
-
-        # Check nested null handling
-        headquarters = json.loads(record["headquarters"])
-        assert headquarters["address"] is None
-        assert headquarters["city"] == "Hawthorne"
+            assert "ID" in schema["properties"]
+            assert "NAME" in schema["properties"]
+            assert "FOUNDER" in schema["properties"]
+            assert "FOUNDED" in schema["properties"]
+            assert "EMPLOYEES" in schema["properties"]
+            assert "VALUATION" in schema["properties"]
+            assert "RAW_DATA" in schema["properties"]

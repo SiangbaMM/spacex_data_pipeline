@@ -114,24 +114,52 @@ class PayloadsTap(SpaceXTapBase):
                         "NORAD_IDS": json.dumps(payload.get("norad_ids", [])),
                         "NATIONALITIES": json.dumps(payload.get("nationalities", [])),
                         "MANUFACTURERS": json.dumps(payload.get("manufacturers", [])),
-                        "MASS_KG": payload.get("mass_kg"),
-                        "MASS_LBS": payload.get("mass_lbs"),
+                        "MASS_KG": self._prepare_value_for_snowflake(
+                            payload.get("mass_kg"), is_numeric=True
+                        ),
+                        "MASS_LBS": self._prepare_value_for_snowflake(
+                            payload.get("mass_lbs"), is_numeric=True
+                        ),
                         "ORBIT": payload.get("orbit"),
                         "REFERENCE_SYSTEM": payload.get("reference_system"),
                         "REGIME": payload.get("regime"),
-                        "LONGITUDE": payload.get("longitude"),
-                        "SEMI_MAJOR_AXIS_KM": payload.get("semi_major_axis_km"),
-                        "ECCENTRICITY": payload.get("eccentricity"),
-                        "PERIAPSIS_KM": payload.get("periapsis_km"),
-                        "APOAPSIS_KM": payload.get("apoapsis_km"),
-                        "INCLINATION_DEG": payload.get("inclination_deg"),
-                        "PERIOD_MIN": payload.get("period_min"),
-                        "LIFESPAN_YEARS": payload.get("lifespan_years"),
+                        "LONGITUDE": self._prepare_value_for_snowflake(
+                            payload.get("longitude"), is_numeric=True
+                        ),
+                        "SEMI_MAJOR_AXIS_KM": self._prepare_value_for_snowflake(
+                            payload.get("semi_major_axis_km"), is_numeric=True
+                        ),
+                        "ECCENTRICITY": self._prepare_value_for_snowflake(
+                            payload.get("eccentricity"), is_numeric=True
+                        ),
+                        "PERIAPSIS_KM": self._prepare_value_for_snowflake(
+                            payload.get("periapsis_km"), is_numeric=True
+                        ),
+                        "APOAPSIS_KM": self._prepare_value_for_snowflake(
+                            payload.get("apoapsis_km"), is_numeric=True
+                        ),
+                        "INCLINATION_DEG": self._prepare_value_for_snowflake(
+                            payload.get("inclination_deg"), is_numeric=True
+                        ),
+                        "PERIOD_MIN": self._prepare_value_for_snowflake(
+                            payload.get("period_min"), is_numeric=True
+                        ),
+                        "LIFESPAN_YEARS": self._prepare_value_for_snowflake(
+                            payload.get("lifespan_years"), is_numeric=True
+                        ),
                         "EPOCH": payload.get("epoch"),
-                        "MEAN_MOTION": payload.get("mean_motion"),
-                        "RAAN": payload.get("raan"),
-                        "ARG_OF_PERICENTER": payload.get("arg_of_pericenter"),
-                        "MEAN_ANOMALY": payload.get("mean_anomaly"),
+                        "MEAN_MOTION": self._prepare_value_for_snowflake(
+                            payload.get("mean_motion"), is_numeric=True
+                        ),
+                        "RAAN": self._prepare_value_for_snowflake(
+                            payload.get("raan"), is_numeric=True
+                        ),
+                        "ARG_OF_PERICENTER": self._prepare_value_for_snowflake(
+                            payload.get("arg_of_pericenter"), is_numeric=True
+                        ),
+                        "MEAN_ANOMALY": self._prepare_value_for_snowflake(
+                            payload.get("mean_anomaly"), is_numeric=True
+                        ),
                         "DRAGON": json.dumps(payload.get("dragon", {}))
                         if payload.get("dragon")
                         else None,

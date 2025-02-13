@@ -96,10 +96,18 @@ class LaunchpadsTap(SpaceXTapBase):
                         "LOCALITY": launchpad.get("locality"),
                         "REGION": launchpad.get("region"),
                         "TIMEZONE": launchpad.get("timezone"),
-                        "LATITUDE": launchpad.get("latitude"),
-                        "LONGITUDE": launchpad.get("longitude"),
-                        "LAUNCH_ATTEMPTS": launchpad.get("launch_attempts"),
-                        "LAUNCH_SUCCESSES": launchpad.get("launch_successes"),
+                        "LATITUDE": self._prepare_value_for_snowflake(
+                            launchpad.get("latitude"), is_numeric=True
+                        ),
+                        "LONGITUDE": self._prepare_value_for_snowflake(
+                            launchpad.get("longitude"), is_numeric=True
+                        ),
+                        "LAUNCH_ATTEMPTS": self._prepare_value_for_snowflake(
+                            launchpad.get("launch_attempts"), is_numeric=True
+                        ),
+                        "LAUNCH_SUCCESSES": self._prepare_value_for_snowflake(
+                            launchpad.get("launch_successes"), is_numeric=True
+                        ),
                         "ROCKETS": json.dumps(launchpad.get("rockets", [])),
                         "LAUNCHES": json.dumps(launchpad.get("launches", [])),
                         "DETAILS": launchpad.get("details"),

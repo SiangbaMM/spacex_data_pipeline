@@ -117,11 +117,21 @@ class DragonsTap(SpaceXTapBase):
                         "NAME": dragon.get("name"),
                         "TYPE": dragon.get("type"),
                         "ACTIVE": dragon.get("active"),
-                        "CREW_CAPACITY": dragon.get("crew_capacity"),
-                        "SIDEWALL_ANGLE_DEG": dragon.get("sidewall_angle_deg"),
-                        "ORBIT_DURATION_YR": dragon.get("orbit_duration_yr"),
-                        "DRY_MASS_KG": dragon.get("dry_mass_kg"),
-                        "DRY_MASS_LB": dragon.get("dry_mass_lb"),
+                        "CREW_CAPACITY": self._prepare_value_for_snowflake(
+                            dragon.get("crew_capacity"), is_numeric=True
+                        ),
+                        "SIDEWALL_ANGLE_DEG": self._prepare_value_for_snowflake(
+                            dragon.get("sidewall_angle_deg"), is_numeric=True
+                        ),
+                        "ORBIT_DURATION_YR": self._prepare_value_for_snowflake(
+                            dragon.get("orbit_duration_yr"), is_numeric=True
+                        ),
+                        "DRY_MASS_KG": self._prepare_value_for_snowflake(
+                            dragon.get("dry_mass_kg"), is_numeric=True
+                        ),
+                        "DRY_MASS_LB": self._prepare_value_for_snowflake(
+                            dragon.get("dry_mass_lb"), is_numeric=True
+                        ),
                         "FIRST_FLIGHT": dragon.get("first_flight"),
                         "HEAT_SHIELD": json.dumps(dragon.get("heat_shield")),
                         "THRUSTERS": json.dumps(dragon.get("thrusters", [])),

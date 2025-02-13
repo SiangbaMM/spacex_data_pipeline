@@ -20,7 +20,7 @@ class CapsulesTap(SpaceXTapBase):
         super().__init__(base_url, config_path)
         self.set_state({"bookmarks": {"capsules": {"last_record": None}}})
 
-    def fetch_capsules(self):
+    def fetch_capsules(self) -> None:
         """Fetch and process capsules data."""
         stream_name = "STG_SPACEX_DATA_CAPSULES"
 
@@ -91,9 +91,15 @@ class CapsulesTap(SpaceXTapBase):
                         "SERIAL": capsule.get("serial"),
                         "STATUS": capsule.get("status"),
                         "DRAGON": capsule.get("dragon"),
-                        "REUSE_COUNT": capsule.get("reuse_count"),
-                        "WATER_LANDINGS": capsule.get("water_landings"),
-                        "LAND_LANDINGS": capsule.get("land_landings"),
+                        "REUSE_COUNT": self._prepare_value_for_snowflake(
+                            capsule.get("reuse_count"), is_numeric=True
+                        ),
+                        "WATER_LANDINGS": self._prepare_value_for_snowflake(
+                            capsule.get("water_landings"), is_numeric=True
+                        ),
+                        "LAND_LANDINGS": self._prepare_value_for_snowflake(
+                            capsule.get("land_landings"), is_numeric=True
+                        ),
                         "LAST_UPDATE": capsule.get("last_update"),
                         "LAUNCHES": capsule.get("launches", []),
                         "CREATED_AT": current_time_str,

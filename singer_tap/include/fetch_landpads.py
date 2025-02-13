@@ -93,10 +93,18 @@ class LandpadsTap(SpaceXTapBase):
                         "TYPE": landpad.get("type"),
                         "LOCALITY": landpad.get("locality"),
                         "REGION": landpad.get("region"),
-                        "LATITUDE": landpad.get("latitude"),
-                        "LONGITUDE": landpad.get("longitude"),
-                        "LANDING_ATTEMPTS": landpad.get("landing_attempts"),
-                        "LANDING_SUCCESSES": landpad.get("landing_successes"),
+                        "LATITUDE": self._prepare_value_for_snowflake(
+                            landpad.get("latitude"), is_numeric=True
+                        ),
+                        "LONGITUDE": self._prepare_value_for_snowflake(
+                            landpad.get("longitude"), is_numeric=True
+                        ),
+                        "LANDING_ATTEMPTS": self._prepare_value_for_snowflake(
+                            landpad.get("landing_attempts"), is_numeric=True
+                        ),
+                        "LANDING_SUCCESSES": self._prepare_value_for_snowflake(
+                            landpad.get("landing_successes"), is_numeric=True
+                        ),
                         "WIKIPEDIA": landpad.get("wikipedia"),
                         "DETAILS": landpad.get("details"),
                         "LAUNCHES": json.dumps(landpad.get("launches", [])),

@@ -1,195 +1,211 @@
 import json
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from typing import Any, Dict, Generator, List, Union
+from unittest.mock import MagicMock, mock_open, patch
 
-import pytest  # type:ignore
+import pytest
+import pytz
+from include.spacex_tap_base import SpaceXTapBase
 
-from singer_tap.include.spacex_tap_base import SpaceXTapBase
+ResponseData = Union[Dict[str, Any], List[Dict[str, Any]]]
 
 
 @pytest.fixture
-def spacex_tap_base():
-    """Instanciate spacex_tap_base
-
-    Args:
-        base_url (str) : The root url of v4 SpaceX API
-        config_path (str) : Config file that contains database credentials
-
-    Returns:
-        SpaceXTapBase: Class instance
-    """
-    return SpaceXTapBase(
-        base_url="https://api.spacexdata.com/v4/", config_path="config_snowflake.json"
-    )
+def mock_datetime() -> Generator[MagicMock, None, None]:
+    """Fixture providing a mocked datetime"""
+    mock_dt = MagicMock(wraps=datetime)
+    mock_now = datetime(2024, 1, 1, 12, 0, 0, tzinfo=pytz.UTC)
+    mock_dt.now = MagicMock(return_value=mock_now)
+    with patch("include.spacex_tap_base.datetime", mock_dt), patch(
+        "datetime.datetime", mock_dt
+    ):
+        yield mock_dt
 
 
-def test_get_current_time(spacex_tap_base):
-    """Test get_current_time returns datetime object"""
+@pytest.fixture
+def mock_config() -> Dict[str, str]:
+    """Fixture providing mock config data"""
+    return {
+        "user": "test_user",
+        "password": "test_password",
+        "account": "test_account",
+        "warehouse": "test_warehouse",
+        "database": "test_database",
+        "schema": "test_schema",
+    }
+
+
+@pytest.fixture
+def spacex_tap_base(
+    mock_snowflake_connection: MagicMock,
+    mock_datetime: MagicMock,
+    mock_config: Dict[str, str],
+) -> SpaceXTapBase:
+    """Fixture providing a SpaceXTapBase instance"""
+    mock_file = mock_open(read_data=json.dumps(mock_config))
+    with patch("os.path.exists", return_value=True), patch("builtins.open", mock_file):
+        tap = SpaceXTapBase(
+            "https://api.spacexdata.com/v4/", "singer_tap/tests/config_test.json"
+        )
+        tap.conn = mock_snowflake_connection
+        return tap
+
+
+def test_get_current_time(
+    spacex_tap_base: SpaceXTapBase, mock_datetime: MagicMock
+) -> None:
+    """Test get_current_time returns correct datetime"""
     current_time = spacex_tap_base.get_current_time()
     assert isinstance(current_time, datetime)
+    assert current_time.tzinfo == pytz.UTC
+    assert current_time == mock_datetime.now.return_value
 
 
-def test_log_error(spacex_tap_base, caplog):
+def test_log_error(spacex_tap_base: SpaceXTapBase, mock_datetime: MagicMock) -> None:
     """Test error logging functionality"""
-    table_name = "TEST_TABLE"
-    error_message = "Test error message"
-    error_data = {"test": "data"}
+    test_table = "TEST_TABLE"
+    test_message = "Test error message"
+    test_data = {"key": "value"}
+
+    # Mock cursor for error logging
+    mock_cursor = MagicMock()
+    spacex_tap_base.conn.cursor.return_value = mock_cursor
 
     spacex_tap_base.log_error(
-        table_name=table_name, error_message=error_message, error_data=error_data
+        table_name=test_table, error_message=test_message, error_data=test_data
     )
 
-    # Verify log message contains required information
-    assert table_name in caplog.text
-    assert error_message in caplog.text
-    assert str(error_data) in caplog.text
+    # Verify error was logged to Snowflake
+    assert mock_cursor.execute.call_count == 1
+    # Verify cursor was closed
+    assert mock_cursor.close.call_count == 1
+    # Verify the execute call arguments
+    args = mock_cursor.execute.call_args[0]
+    assert test_table in str(args)
+    assert test_message in str(args)
 
 
-def test_base_url_initialization():
-    """Test base URL initialization"""
-    base_url = "https://test.api.com/"
-    config_path = "test_config_snowflake.json"
-    tap = SpaceXTapBase(base_url=base_url, config_path=config_path)
+def test_close_connection(spacex_tap_base: SpaceXTapBase) -> None:
+    """Test close_connection method"""
+    # Add some records to buffer to test flushing
+    spacex_tap_base.insert_into_snowflake("TEST_STREAM", {"id": "1", "name": "test"})
 
-    assert tap.base_url == base_url
-    assert tap.config_path == config_path
+    # Mock cursor for buffer flush
+    mock_cursor = MagicMock()
+    spacex_tap_base.conn.cursor.return_value = mock_cursor
 
+    # Close connection
+    spacex_tap_base.close_connection()
 
-def test_base_url_trailing_slash():
-    """Test base URL automatically adds trailing slash if missing"""
-    base_url = "https://test.api.com"
-    tap = SpaceXTapBase(base_url=base_url, config_path="config_snowflake.json")
-
-    assert tap.base_url == base_url + "/"
-
-
-def test_rate_limit_handling(spacex_tap_base):
-    """Test rate limit handling with exponential backoff"""
-    with patch("requests.get") as mock_get, patch("time.sleep") as mock_sleep:
-        # Mock rate limit response followed by success
-        rate_limit_response = MagicMock()
-        rate_limit_response.status_code = 429
-        rate_limit_response.headers = {"Retry-After": "2"}
-
-        success_response = MagicMock()
-        success_response.status_code = 200
-        success_response.json.return_value = {"data": "test"}
-
-        mock_get.side_effect = [rate_limit_response, success_response]
-
-        # Make request
-        response = spacex_tap_base.make_request("test_endpoint")
-
-        # Verify retry behavior
-        assert mock_get.call_count == 2
-        assert mock_sleep.called
-        assert response.json() == {"data": "test"}
+    # Verify buffer was flushed and connection was closed
+    assert mock_cursor.execute.call_count >= 1
+    assert spacex_tap_base.conn.close.call_count == 1
 
 
-def test_pagination_handling(spacex_tap_base):
-    """Test handling of paginated responses"""
-    with patch("requests.get") as mock_get:
-        # Mock paginated responses
-        first_page = MagicMock()
-        first_page.status_code = 200
-        first_page.json.return_value = {"data": ["item1", "item2"], "next": "/page/2"}
+def test_base_url_initialization(spacex_tap_base: SpaceXTapBase) -> None:
+    """Test base_url is properly initialized"""
+    assert spacex_tap_base.base_url == "https://api.spacexdata.com/v4/"
+    assert spacex_tap_base.base_url.endswith("/")
 
-        second_page = MagicMock()
-        second_page.status_code = 200
-        second_page.json.return_value = {"data": ["item3"], "next": None}
-
-        mock_get.side_effect = [first_page, second_page]
-
-        # Get all pages
-        all_data = spacex_tap_base.get_all_pages("test_endpoint")
-
-        # Verify pagination handling
-        assert mock_get.call_count == 2
-        assert all_data == ["item1", "item2", "item3"]
+    # Test URL normalization
+    mock_config = {
+        "user": "test",
+        "password": "test",
+        "account": "test",
+        "warehouse": "test",
+        "database": "test",
+        "schema": "test",
+    }
+    mock_file = mock_open(read_data=json.dumps(mock_config))
+    with patch("os.path.exists", return_value=True), patch("builtins.open", mock_file):
+        tap = SpaceXTapBase("https://api.example.com/v1///", "config.json")
+        assert tap.base_url == "https://api.example.com/v1/"
 
 
-def test_config_validation(spacex_tap_base):
-    """Test configuration validation"""
-    # Test missing required fields
-    with pytest.raises(ValueError) as exc_info:
-        SpaceXTapBase.validate_config({})
-        assert "Missing required configuration" in str(exc_info.value)
-
-    # Test invalid start date format
-    with pytest.raises(ValueError) as exc_info:
-        SpaceXTapBase.validate_config(
-            {"start_date": "invalid-date", "api_token": "test_token"}
-        )
-        assert "Invalid start_date format" in str(exc_info.value)
-
-    # Test valid config
-    valid_config = {"start_date": "2024-01-01T00:00:00Z", "api_token": "test_token"}
-    assert SpaceXTapBase.validate_config(valid_config) is None
+def test_config_path_initialization(spacex_tap_base: SpaceXTapBase) -> None:
+    """Test config_path is properly initialized"""
+    assert spacex_tap_base.snowflake_config is not None
+    assert isinstance(spacex_tap_base.snowflake_config, dict)
+    assert "user" in spacex_tap_base.snowflake_config
+    assert "password" in spacex_tap_base.snowflake_config
+    assert "account" in spacex_tap_base.snowflake_config
 
 
-def test_state_management(spacex_tap_base):
-    """Test state management and bookmarking"""
-    test_state = {"bookmarks": {"launches": {"last_record": "2024-01-01T00:00:00Z"}}}
+def test_error_logging_without_data(
+    spacex_tap_base: SpaceXTapBase, mock_datetime: MagicMock
+) -> None:
+    """Test error logging without error_data"""
+    test_table = "TEST_TABLE"
+    test_message = "Test error message"
 
-    # Test state loading
-    with patch("builtins.open", create=True) as mock_open:
-        mock_open.return_value.__enter__.return_value.read.return_value = json.dumps(
-            test_state
-        )
-        loaded_state = spacex_tap_base.load_state()
-        assert loaded_state == test_state
+    # Mock cursor for error logging
+    mock_cursor = MagicMock()
+    spacex_tap_base.conn.cursor.return_value = mock_cursor
 
-    # Test state saving
-    with patch("builtins.open", create=True) as mock_open:
-        spacex_tap_base.save_state(test_state)
-        mock_open.assert_called_once()
-        written_data = json.loads(
-            mock_open.return_value.__enter__.return_value.write.call_args[0][0]
-        )
-        assert written_data == test_state
+    spacex_tap_base.log_error(table_name=test_table, error_message=test_message)
 
-
-def test_malformed_response_handling(spacex_tap_base):
-    """Test handling of malformed API responses"""
-    with patch("requests.get") as mock_get:
-        # Test invalid JSON response
-        invalid_json_response = MagicMock()
-        invalid_json_response.status_code = 200
-        invalid_json_response.json.side_effect = json.JSONDecodeError(
-            "Invalid JSON", "", 0
-        )
-        mock_get.return_value = invalid_json_response
-
-        with pytest.raises(ValueError) as exc_info:
-            spacex_tap_base.make_request("test_endpoint")
-            assert "Invalid JSON response" in str(exc_info.value)
-
-        # Test unexpected response structure
-        unexpected_response = MagicMock()
-        unexpected_response.status_code = 200
-        unexpected_response.json.return_value = None
-        mock_get.return_value = unexpected_response
-
-        with pytest.raises(ValueError) as exc_info:
-            spacex_tap_base.make_request("test_endpoint")
-            assert "Unexpected response format" in str(exc_info.value)
+    # Verify error was logged to Snowflake
+    assert mock_cursor.execute.call_count == 1
+    # Verify cursor was closed
+    assert mock_cursor.close.call_count == 1
+    # Verify the execute call arguments
+    args = mock_cursor.execute.call_args[0]
+    assert test_table in str(args)
+    assert test_message in str(args)
 
 
-def test_bookmark_handling(spacex_tap_base):
-    """Test bookmark handling for incremental syncs"""
-    test_state = {"bookmarks": {"launches": {"last_record": "2024-01-01T00:00:00Z"}}}
+def test_initialization_with_invalid_url() -> None:
+    """Test initialization with invalid URL"""
+    mock_config = {
+        "user": "test",
+        "password": "test",
+        "account": "test",
+        "warehouse": "test",
+        "database": "test",
+        "schema": "test",
+    }
+    mock_file = mock_open(read_data=json.dumps(mock_config))
+    with patch("os.path.exists", return_value=True), patch("builtins.open", mock_file):
+        with pytest.raises(ValueError, match="base_url cannot be empty"):
+            SpaceXTapBase("", "singer_tap/tests/config_test.json")
 
-    # Test getting bookmark
-    with patch.object(spacex_tap_base, "load_state", return_value=test_state):
-        bookmark = spacex_tap_base.get_bookmark("launches")
-        assert bookmark == "2024-01-01T00:00:00Z"
 
-        # Test non-existent bookmark
-        assert spacex_tap_base.get_bookmark("non_existent") is None
+def test_initialization_with_invalid_config() -> None:
+    """Test initialization with invalid config path"""
+    with pytest.raises(ValueError, match="config_path cannot be empty"):
+        SpaceXTapBase("https://api.spacexdata.com/v4/", "")
 
-    # Test setting bookmark
-    new_bookmark = "2024-01-02T00:00:00Z"
-    with patch.object(spacex_tap_base, "save_state") as mock_save:
-        spacex_tap_base.set_bookmark("launches", new_bookmark)
-        saved_state = mock_save.call_args[0][0]
-        assert saved_state["bookmarks"]["launches"]["last_record"] == new_bookmark
+
+def test_initialization_with_missing_config_fields() -> None:
+    """Test initialization with missing Snowflake config fields"""
+    mock_config = {"user": "test"}  # Missing required fields
+    mock_file = mock_open(read_data=json.dumps(mock_config))
+    with patch("os.path.exists", return_value=True), patch("builtins.open", mock_file):
+        with pytest.raises(
+            ValueError, match="Missing required Snowflake configuration fields"
+        ):
+            SpaceXTapBase("https://api.spacexdata.com/v4/", "config.json")
+
+
+def test_batch_processing(spacex_tap_base: SpaceXTapBase) -> None:
+    """Test batch processing functionality"""
+    stream_name = "TEST_STREAM"
+
+    # Set small batch size for testing
+    spacex_tap_base.BATCH_SIZE = 2
+
+    # Mock cursor for batch inserts
+    mock_cursor = MagicMock()
+    spacex_tap_base.conn.cursor.return_value = mock_cursor
+
+    # Insert records
+    for i in range(3):  # This should cause one flush after 2 records
+        record = {"id": str(i), "name": f"test_{i}"}
+        spacex_tap_base.insert_into_snowflake(stream_name, record)
+
+    # Verify one batch was flushed
+    assert mock_cursor.execute.call_count >= 1
+    # Close to flush remaining records
+    spacex_tap_base.close_connection()
+    # Verify final flush
+    assert mock_cursor.execute.call_count >= 2

@@ -110,19 +110,39 @@ class RocketsTap(SpaceXTapBase):
                         "NAME": rocket.get("name"),
                         "TYPE": rocket.get("type"),
                         "ACTIVE": rocket.get("active"),
-                        "STAGES": rocket.get("stages"),
-                        "BOOSTERS": rocket.get("boosters"),
-                        "COST_PER_LAUNCH": rocket.get("cost_per_launch"),
-                        "SUCCESS_RATE_PCT": rocket.get("success_rate_pct"),
+                        "STAGES": self._prepare_value_for_snowflake(
+                            rocket.get("stages"), is_numeric=True
+                        ),
+                        "BOOSTERS": self._prepare_value_for_snowflake(
+                            rocket.get("boosters"), is_numeric=True
+                        ),
+                        "COST_PER_LAUNCH": self._prepare_value_for_snowflake(
+                            rocket.get("cost_per_launch"), is_numeric=True
+                        ),
+                        "SUCCESS_RATE_PCT": self._prepare_value_for_snowflake(
+                            rocket.get("success_rate_pct"), is_numeric=True
+                        ),
                         "FIRST_FLIGHT": rocket.get("first_flight"),
                         "COUNTRY": rocket.get("country"),
                         "COMPANY": rocket.get("company"),
-                        "HEIGHT_METERS": height.get("meters"),
-                        "HEIGHT_FEET": height.get("feet"),
-                        "DIAMETER_METERS": diameter.get("meters"),
-                        "DIAMETER_FEET": diameter.get("feet"),
-                        "MASS_KG": mass.get("kg"),
-                        "MASS_LBS": mass.get("lb"),
+                        "HEIGHT_METERS": self._prepare_value_for_snowflake(
+                            height.get("meters"), is_numeric=True
+                        ),
+                        "HEIGHT_FEET": self._prepare_value_for_snowflake(
+                            height.get("feet"), is_numeric=True
+                        ),
+                        "DIAMETER_METERS": self._prepare_value_for_snowflake(
+                            diameter.get("meters"), is_numeric=True
+                        ),
+                        "DIAMETER_FEET": self._prepare_value_for_snowflake(
+                            diameter.get("feet"), is_numeric=True
+                        ),
+                        "MASS_KG": self._prepare_value_for_snowflake(
+                            mass.get("kg"), is_numeric=True
+                        ),
+                        "MASS_LBS": self._prepare_value_for_snowflake(
+                            mass.get("lb"), is_numeric=True
+                        ),
                         "PAYLOAD_WEIGHTS": json.dumps(
                             rocket.get("payload_weights", [])
                         ),

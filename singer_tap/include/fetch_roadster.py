@@ -95,25 +95,61 @@ class RoadsterTap(SpaceXTapBase):
                 "ROADSTER_ID": roadster_data.get("id"),
                 "NAME": roadster_data.get("name"),
                 "LAUNCH_DATE_UTC": roadster_data.get("launch_date_utc"),
-                "LAUNCH_DATE_UNIX": roadster_data.get("launch_date_unix"),
-                "LAUNCH_MASS_KG": roadster_data.get("launch_mass_kg"),
-                "LAUNCH_MASS_LBS": roadster_data.get("launch_mass_lbs"),
-                "NORAD_ID": roadster_data.get("norad_id"),
-                "EPOCH_JD": roadster_data.get("epoch_jd"),
+                "LAUNCH_DATE_UNIX": self._prepare_value_for_snowflake(
+                    roadster_data.get("launch_date_unix"), is_numeric=True
+                ),
+                "LAUNCH_MASS_KG": self._prepare_value_for_snowflake(
+                    roadster_data.get("launch_mass_kg"), is_numeric=True
+                ),
+                "LAUNCH_MASS_LBS": self._prepare_value_for_snowflake(
+                    roadster_data.get("launch_mass_lbs"), is_numeric=True
+                ),
+                "NORAD_ID": self._prepare_value_for_snowflake(
+                    roadster_data.get("norad_id"), is_numeric=True
+                ),
+                "EPOCH_JD": self._prepare_value_for_snowflake(
+                    roadster_data.get("epoch_jd"), is_numeric=True
+                ),
                 "ORBIT_TYPE": roadster_data.get("orbit_type"),
-                "APOAPSIS_AU": roadster_data.get("apoapsis_au"),
-                "PERIAPSIS_AU": roadster_data.get("periapsis_au"),
-                "SEMI_MAJOR_AXIS_AU": roadster_data.get("semi_major_axis_au"),
-                "ECCENTRICITY": roadster_data.get("eccentricity"),
-                "INCLINATION": roadster_data.get("inclination"),
-                "LONGITUDE": roadster_data.get("longitude"),
-                "PERIOD_DAYS": roadster_data.get("period_days"),
-                "SPEED_KPH": roadster_data.get("speed_kph"),
-                "SPEED_MPH": roadster_data.get("speed_mph"),
-                "EARTH_DISTANCE_KM": roadster_data.get("earth_distance_km"),
-                "EARTH_DISTANCE_MI": roadster_data.get("earth_distance_mi"),
-                "MARS_DISTANCE_KM": roadster_data.get("mars_distance_km"),
-                "MARS_DISTANCE_MI": roadster_data.get("mars_distance_mi"),
+                "APOAPSIS_AU": self._prepare_value_for_snowflake(
+                    roadster_data.get("apoapsis_au"), is_numeric=True
+                ),
+                "PERIAPSIS_AU": self._prepare_value_for_snowflake(
+                    roadster_data.get("periapsis_au"), is_numeric=True
+                ),
+                "SEMI_MAJOR_AXIS_AU": self._prepare_value_for_snowflake(
+                    roadster_data.get("semi_major_axis_au"), is_numeric=True
+                ),
+                "ECCENTRICITY": self._prepare_value_for_snowflake(
+                    roadster_data.get("eccentricity"), is_numeric=True
+                ),
+                "INCLINATION": self._prepare_value_for_snowflake(
+                    roadster_data.get("inclination"), is_numeric=True
+                ),
+                "LONGITUDE": self._prepare_value_for_snowflake(
+                    roadster_data.get("longitude"), is_numeric=True
+                ),
+                "PERIOD_DAYS": self._prepare_value_for_snowflake(
+                    roadster_data.get("period_days"), is_numeric=True
+                ),
+                "SPEED_KPH": self._prepare_value_for_snowflake(
+                    roadster_data.get("speed_kph"), is_numeric=True
+                ),
+                "SPEED_MPH": self._prepare_value_for_snowflake(
+                    roadster_data.get("speed_mph"), is_numeric=True
+                ),
+                "EARTH_DISTANCE_KM": self._prepare_value_for_snowflake(
+                    roadster_data.get("earth_distance_km"), is_numeric=True
+                ),
+                "EARTH_DISTANCE_MI": self._prepare_value_for_snowflake(
+                    roadster_data.get("earth_distance_mi"), is_numeric=True
+                ),
+                "MARS_DISTANCE_KM": self._prepare_value_for_snowflake(
+                    roadster_data.get("mars_distance_km"), is_numeric=True
+                ),
+                "MARS_DISTANCE_MI": self._prepare_value_for_snowflake(
+                    roadster_data.get("mars_distance_mi"), is_numeric=True
+                ),
                 "WIKIPEDIA": roadster_data.get("wikipedia"),
                 "DETAILS": roadster_data.get("details"),
                 "VIDEO": roadster_data.get("video"),

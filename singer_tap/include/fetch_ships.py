@@ -110,6 +110,13 @@ class ShipsTap(SpaceXTapBase):
             current_time = self.get_current_time()
             current_time_str = current_time.isoformat()
 
+            # Skip processing if no ships data
+            if not ships_data:
+                # Write state even for empty response
+                state = {"STG_SPACEX_DATA_SHIPS": {"last_sync": current_time_str}}
+                singer.write_state(state)
+                return
+
             # Process and write each ship record
             for ship in ships_data:
                 try:
@@ -125,15 +132,29 @@ class ShipsTap(SpaceXTapBase):
                         "MMSI": ship.get("mmsi"),
                         "ABS": ship.get("abs"),
                         "CLASS": ship.get("class"),
-                        "MASS_KG": ship.get("mass_kg"),
-                        "MASS_LBS": ship.get("mass_lbs"),
-                        "YEAR_BUILT": ship.get("year_built"),
+                        "MASS_KG": self._prepare_value_for_snowflake(
+                            ship.get("mass_kg"), is_numeric=True
+                        ),
+                        "MASS_LBS": self._prepare_value_for_snowflake(
+                            ship.get("mass_lbs"), is_numeric=True
+                        ),
+                        "YEAR_BUILT": self._prepare_value_for_snowflake(
+                            ship.get("year_built"), is_numeric=True
+                        ),
                         "HOME_PORT": ship.get("home_port"),
                         "STATUS": ship.get("status"),
-                        "SPEED_KN": ship.get("speed_kn"),
-                        "COURSE_DEG": ship.get("course_deg"),
-                        "LATITUDE": ship.get("latitude"),
-                        "LONGITUDE": ship.get("longitude"),
+                        "SPEED_KN": self._prepare_value_for_snowflake(
+                            ship.get("speed_kn"), is_numeric=True
+                        ),
+                        "COURSE_DEG": self._prepare_value_for_snowflake(
+                            ship.get("course_deg"), is_numeric=True
+                        ),
+                        "LATITUDE": self._prepare_value_for_snowflake(
+                            ship.get("latitude"), is_numeric=True
+                        ),
+                        "LONGITUDE": self._prepare_value_for_snowflake(
+                            ship.get("longitude"), is_numeric=True
+                        ),
                         "LAST_AIS_UPDATE": ship.get("last_ais_update"),
                         "LINK": ship.get("link"),
                         "IMAGE": ship.get("image"),

@@ -42,7 +42,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         self.config_path = config_path
 
     # First set of functions - Core data
-    def fetch_company(self):
+    def fetch_company(self) -> None:
         """Set fetch_company function from CompanyTap class"""
         logger.info("Fetching company data")
         company_tap = CompanyTap(self.base_url, self.config_path)
@@ -51,7 +51,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             company_tap.close_connection()
 
-    def fetch_capsules(self):
+    def fetch_capsules(self) -> None:
         """Set fetch_capsules function from CapsulesTap class"""
         logger.info("Fetching capsules data")
         capsules_tap = CapsulesTap(self.base_url, self.config_path)
@@ -60,7 +60,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             capsules_tap.close_connection()
 
-    def fetch_cores(self):
+    def fetch_cores(self) -> None:
         """Set fetch_cores function from CoresTap class"""
         logger.info("Fetching cores data")
         cores_tap = CoresTap(self.base_url, self.config_path)
@@ -69,7 +69,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             cores_tap.close_connection()
 
-    def fetch_crew(self):
+    def fetch_crew(self) -> None:
         """Set fetch_crew function from CrewTap class"""
         logger.info("Fetching crew data")
         crew_tap = CrewTap(self.base_url, self.config_path)
@@ -78,7 +78,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             crew_tap.close_connection()
 
-    def fetch_dragons(self):
+    def fetch_dragons(self) -> None:
         """Set fetch_dragons function from DragonsTap class"""
         logger.info("Fetching dragons data")
         dragons_tap = DragonsTap(self.base_url, self.config_path)
@@ -88,7 +88,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
             dragons_tap.close_connection()
 
     # Second set of functions - Mission and location data
-    def fetch_landpads(self):
+    def fetch_landpads(self) -> None:
         """Set fetch_landpads function from LandpadsTap class"""
         logger.info("Fetching landpads data")
         landpads_tap = LandpadsTap(self.base_url, self.config_path)
@@ -97,7 +97,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             landpads_tap.close_connection()
 
-    def fetch_launches(self):
+    def fetch_launches(self) -> None:
         """Set fetch_launches function from LaunchesTap class"""
         logger.info("Fetching launches data")
         launches_tap = LaunchesTap(self.base_url, self.config_path)
@@ -106,7 +106,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             launches_tap.close_connection()
 
-    def fetch_launchpads(self):
+    def fetch_launchpads(self) -> None:
         """Set fetch_launchpads function from LaunchpadsTap class"""
         logger.info("Fetching launchpads data")
         launchpads_tap = LaunchpadsTap(self.base_url, self.config_path)
@@ -115,7 +115,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             launchpads_tap.close_connection()
 
-    def fetch_history(self):
+    def fetch_history(self) -> None:
         """Set fetch_history function from HistoryTap class"""
         logger.info("Fetching history data")
         history_tap = HistoryTap(self.base_url, self.config_path)
@@ -124,7 +124,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             history_tap.close_connection()
 
-    def fetch_payloads(self):
+    def fetch_payloads(self) -> None:
         """Set fetch_payloads function from PayloadsTap class"""
         logger.info("Fetching payloads data")
         payloads_tap = PayloadsTap(self.base_url, self.config_path)
@@ -133,7 +133,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             payloads_tap.close_connection()
 
-    def fetch_roadsters(self):
+    def fetch_roadsters(self) -> None:
         """Set fetch_roadsters function from RoadsterTap class"""
         logger.info("Fetching payloads data")
         roadsters_tap = RoadsterTap(self.base_url, self.config_path)
@@ -142,7 +142,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             roadsters_tap.close_connection()
 
-    def fetch_rockets(self):
+    def fetch_rockets(self) -> None:
         """Set fetch_rockets function from RocketsTap class"""
         logger.info("Fetching payloads data")
         rockets_tap = RocketsTap(self.base_url, self.config_path)
@@ -152,7 +152,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
             rockets_tap.close_connection()
 
     # Third set of functions - Mission and location data
-    def fetch_ships(self):
+    def fetch_ships(self) -> None:
         """Set fetch_ships function from ShipsTap class"""
         logger.info("Fetching ships data")
         ships_tap = ShipsTap(self.base_url, self.config_path)
@@ -161,7 +161,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             ships_tap.close_connection()
 
-    def fetch_starlink(self):
+    def fetch_starlink(self) -> None:
         """Set fetch_starlink function from StarlinkTap class"""
         logger.info("Fetching starlink data")
         starlink_tap = StarlinkTap(self.base_url, self.config_path)
@@ -170,7 +170,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         finally:
             starlink_tap.close_connection()
 
-    def run_first_set(self):
+    def run_first_set(self) -> None:
         """Run first set of the following entity functions.
 
         Functions list :
@@ -200,7 +200,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
 
         logger.info("Completed first set of functions")
 
-    def run_second_set(self):
+    def run_second_set(self) -> None:
         """Run second set of the following entity functions.
 
         Functions list :
@@ -230,7 +230,7 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
 
         logger.info("Completed second set of functions")
 
-    def run_third_set(self):
+    def run_third_set(self) -> None:
         """Run third set of the following entity functions.
 
         Functions list
@@ -259,10 +259,12 @@ class SpaceXTapOrchestrator(SpaceXTapBase):
         logger.info("Completed second set of functions")
 
 
-def main():
+def main() -> None:
     """Main function in charge of running SpaceX tap orchestrator."""  # noqa D401
+    rel_path = Path(*Path(__file__).parts[:-1]) / "config_snowflake.json"
+    config_file = str(rel_path)
     BASE_URL = "https://api.spacexdata.com/v4/"
-    CONFIG_PATH = "config_snowflake.json"
+    CONFIG_PATH = config_file  # "singer_tap/runner/config_snowflake.json"
 
     try:
         # Initialize orchestrator

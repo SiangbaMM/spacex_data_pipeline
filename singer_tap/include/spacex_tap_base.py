@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import pytz  # type: ignore
 import singer  # type: ignore
@@ -18,19 +18,28 @@ class SpaceXTapBase:
         Args:
         - base_url (str) : The root url of v4 SpaceX API
         - config_path (str) : Config file that contains database credentials
+
+        Raises:
+        - ValueError: If base_url is empty or invalid
+        - FileNotFoundError: If config_path is empty or file doesn't exist
         """
-        self.base_url = base_url
+        if not base_url or not base_url.strip():
+            raise ValueError("base_url cannot be empty")
+        if not config_path or not config_path.strip():
+            raise ValueError("config_path cannot be empty")
+
+        self.base_url = base_url.rstrip("/") + "/"  # Ensure single trailing slash
         self.snowflake_config = self._load_config(config_path)
         self.conn = self._create_snowflake_connection()
         self.state: Dict[str, Dict] = {"bookmarks": {}}
         self._buffer: Dict[str, List[Dict]] = {}  # Buffer for bulk loading
         self.BATCH_SIZE = 1000  # Number of records to accumulate before bulk loading
 
-    def get_state(self):
+    def get_state(self) -> Dict[str, Dict]:
         """Get the current state."""
         return self.state
 
-    def set_state(self, state: Dict):
+    def set_state(self, state: Dict) -> None:
         """Set the current state.
 
         Args:
@@ -38,16 +47,32 @@ class SpaceXTapBase:
         """
         self.state = state
 
-    def get_current_time(self):
+    def get_current_time(self) -> datetime:
         """Get current time with UTC timezone."""
         return datetime.now(pytz.UTC)
 
     def _load_config(self, config_path: str) -> Dict:
         """Load Snowflake configuration."""
         with open(config_path, "r") as f:
-            return json.load(f)
+            config: Dict = json.load(f)
+            # Validate required Snowflake configuration
+            required_fields = [
+                "user",
+                "password",
+                "account",
+                "warehouse",
+                "database",
+                "schema",
+            ]
+            missing_fields = [field for field in required_fields if field not in config]
+            if missing_fields:
+                raise ValueError(
+                    f"Missing required Snowflake\
+                        configuration fields: {', '.join(missing_fields)}"
+                )
+            return config
 
-    def _create_snowflake_connection(self):
+    def _create_snowflake_connection(self) -> snowflake.connector:
         """Create Snowflake connection."""
         try:
             # Establish connection
@@ -73,27 +98,30 @@ class SpaceXTapBase:
             print(f"Failed to connect to Snowflake. Error: {str(e)}")
             return False
 
-    def _prepare_value_for_snowflake(self, value) -> str:
+    def _prepare_value_for_snowflake(self, value: Any, is_numeric: bool = False) -> str:
         """Prepare a value for insertion into Snowflake.
 
         Args:
             value: The value to prepare
+            is_numeric: Whether the value should be treated as numeric
 
         Returns:
             str: The prepared value as a string
         """
-        if isinstance(value, (dict, list)):
+        if value is None:
+            return "-999999999" if is_numeric else "NULL"
+        elif isinstance(value, (dict, list)):
             json_str = json.dumps(value).replace("'", "''")
             return f"PARSE_JSON('{json_str}')"
         elif isinstance(value, str):
             escaped_value = value.replace("'", "''")
             return f"'{escaped_value}'"
-        elif value is None:
-            return "NULL"
-        else:
+        elif isinstance(value, (int, float)):
             return str(value)
+        else:
+            raise TypeError(f"Unsupported type for value: {type(value)}")
 
-    def _flush_buffer(self, stream_name: str):
+    def _flush_buffer(self, stream_name: str) -> None:
         """Flush the buffer for a given stream to Snowflake using bulk insert.
 
         Args:
@@ -137,7 +165,7 @@ class SpaceXTapBase:
         finally:
             cursor.close()
 
-    def insert_into_snowflake(self, stream_name: str, record: Dict):
+    def insert_into_snowflake(self, stream_name: str, record: Dict) -> None:
         """Buffer a record for bulk insert into Snowflake.
 
         Args:
@@ -155,7 +183,9 @@ class SpaceXTapBase:
         if len(self._buffer[stream_name]) >= self.BATCH_SIZE:
             self._flush_buffer(stream_name)
 
-    def log_error(self, table_name: str, error_message: str, error_data: Dict = {}):
+    def log_error(
+        self, table_name: str, error_message: str, error_data: Dict = {}
+    ) -> None:
         """Log error to Snowflake STG_SPACEX_DATA_LOAD_ERRORS table."""
         try:
             cursor = self.conn.cursor()
@@ -174,6 +204,7 @@ class SpaceXTapBase:
             )
 
             self.conn.commit()
+
         except SnowflakeError as e:
             singer.get_logger().error(
                 f"Error logging to STG_SPACEX_DATA_LOAD_ERRORS table: {str(e)}"
@@ -181,7 +212,7 @@ class SpaceXTapBase:
         finally:
             cursor.close()
 
-    def close_connection(self):
+    def close_connection(self) -> None:
         """Close Snowflake connection after flushing any remaining buffered records."""
         try:
             # Flush any remaining records in buffers

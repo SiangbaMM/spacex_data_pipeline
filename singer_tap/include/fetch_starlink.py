@@ -94,25 +94,53 @@ class StarlinkTap(SpaceXTapBase):
                         "STARLINK_ID": satellite.get("id"),
                         "VERSION": satellite.get("version"),
                         "LAUNCH": satellite.get("launch"),
-                        "LONGITUDE": satellite.get("longitude"),
-                        "LATITUDE": satellite.get("latitude"),
-                        "HEIGHT_KM": satellite.get("height_km"),
-                        "VELOCITY_KMS": satellite.get("velocity_kms"),
+                        "LONGITUDE": self._prepare_value_for_snowflake(
+                            satellite.get("longitude"), is_numeric=True
+                        ),
+                        "LATITUDE": self._prepare_value_for_snowflake(
+                            satellite.get("latitude"), is_numeric=True
+                        ),
+                        "HEIGHT_KM": self._prepare_value_for_snowflake(
+                            satellite.get("height_km"), is_numeric=True
+                        ),
+                        "VELOCITY_KMS": self._prepare_value_for_snowflake(
+                            satellite.get("velocity_kms"), is_numeric=True
+                        ),
                         "SPACETRACK": json.dumps(spacetrack),
                         "LAUNCH_DATE": spacetrack.get("LAUNCH_DATE"),
                         "OBJECT_NAME": spacetrack.get("OBJECT_NAME"),
                         "OBJECT_ID": spacetrack.get("OBJECT_ID"),
                         "EPOCH": spacetrack.get("EPOCH"),
-                        "PERIOD_MIN": spacetrack.get("PERIOD"),
-                        "INCLINATION_DEG": spacetrack.get("INCLINATION"),
-                        "APOAPSIS_KM": spacetrack.get("APOAPSIS"),
-                        "PERIAPSIS_KM": spacetrack.get("PERIAPSIS"),
-                        "ECCENTRICITY": spacetrack.get("ECCENTRICITY"),
-                        "MEAN_MOTION": spacetrack.get("MEAN_MOTION"),
-                        "MEAN_ANOMALY": spacetrack.get("MEAN_ANOMALY"),
-                        "ARG_OF_PERICENTER": spacetrack.get("ARG_OF_PERICENTER"),
-                        "RAAN": spacetrack.get("RAAN"),
-                        "SEMI_MAJOR_AXIS_KM": spacetrack.get("SEMI_MAJOR_AXIS"),
+                        "PERIOD_MIN": self._prepare_value_for_snowflake(
+                            spacetrack.get("PERIOD"), is_numeric=True
+                        ),
+                        "INCLINATION_DEG": self._prepare_value_for_snowflake(
+                            spacetrack.get("INCLINATION"), is_numeric=True
+                        ),
+                        "APOAPSIS_KM": self._prepare_value_for_snowflake(
+                            spacetrack.get("APOAPSIS"), is_numeric=True
+                        ),
+                        "PERIAPSIS_KM": self._prepare_value_for_snowflake(
+                            spacetrack.get("PERIAPSIS"), is_numeric=True
+                        ),
+                        "ECCENTRICITY": self._prepare_value_for_snowflake(
+                            spacetrack.get("ECCENTRICITY"), is_numeric=True
+                        ),
+                        "MEAN_MOTION": self._prepare_value_for_snowflake(
+                            spacetrack.get("MEAN_MOTION"), is_numeric=True
+                        ),
+                        "MEAN_ANOMALY": self._prepare_value_for_snowflake(
+                            spacetrack.get("MEAN_ANOMALY"), is_numeric=True
+                        ),
+                        "ARG_OF_PERICENTER": self._prepare_value_for_snowflake(
+                            spacetrack.get("ARG_OF_PERICENTER"), is_numeric=True
+                        ),
+                        "RAAN": self._prepare_value_for_snowflake(
+                            spacetrack.get("RAAN"), is_numeric=True
+                        ),
+                        "SEMI_MAJOR_AXIS_KM": self._prepare_value_for_snowflake(
+                            spacetrack.get("SEMI_MAJOR_AXIS"), is_numeric=True
+                        ),
                         "CREATED_AT": current_time_str,
                         "UPDATED_AT": current_time_str,
                         "RAW_DATA": json.dumps(satellite),

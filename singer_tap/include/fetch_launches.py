@@ -110,16 +110,24 @@ class LaunchesTap(SpaceXTapBase):
                     # Transform data for Snowflake compatibility
                     transformed_launch = {
                         "LAUNCH_ID": launch.get("id"),
-                        "FLIGHT_NUMBER": launch.get("flight_number"),
+                        "FLIGHT_NUMBER": self._prepare_value_for_snowflake(
+                            launch.get("flight_number"), is_numeric=True
+                        ),
                         "NAME": launch.get("name"),
                         "DATE_UTC": launch.get("date_utc"),
-                        "DATE_UNIX": launch.get("date_unix"),
+                        "DATE_UNIX": self._prepare_value_for_snowflake(
+                            launch.get("date_unix"), is_numeric=True
+                        ),
                         "DATE_LOCAL": launch.get("date_local"),
                         "DATE_PRECISION": launch.get("date_precision"),
                         "STATIC_FIRE_DATE_UTC": launch.get("static_fire_date_utc"),
-                        "STATIC_FIRE_DATE_UNIX": launch.get("static_fire_date_unix"),
+                        "STATIC_FIRE_DATE_UNIX": self._prepare_value_for_snowflake(
+                            launch.get("static_fire_date_unix"), is_numeric=True
+                        ),
                         "NET": launch.get("net"),
-                        "WINDOW": launch.get("window"),
+                        "WINDOW": self._prepare_value_for_snowflake(
+                            launch.get("window"), is_numeric=True
+                        ),
                         "ROCKET": launch.get("rocket"),
                         "SUCCESS": launch.get("success"),
                         "FAILURES": json.dumps(launch.get("failures", [])),
