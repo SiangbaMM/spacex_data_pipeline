@@ -34,6 +34,7 @@ class SpaceXTapBase:
         self.state: Dict[str, Dict] = {"bookmarks": {}}
         self._buffer: Dict[str, List[Dict]] = {}  # Buffer for bulk loading
         self.BATCH_SIZE = 1000  # Number of records to accumulate before bulk loading
+        self._truncated_tables: set = set()  # Track which tables have been truncated
 
     def get_state(self) -> Dict[str, Dict]:
         """Get the current state."""
@@ -165,6 +166,36 @@ class SpaceXTapBase:
         finally:
             cursor.close()
 
+    def _truncate_table(self, table_name: str) -> None:
+        """Truncate a Snowflake table.
+
+        Args:
+            table_name (str): The name of the table to truncate
+
+        Raises:
+            SnowflakeError: If truncate operation fails
+        """
+        try:
+            cursor = self.conn.cursor()
+            # Log truncate operation
+            singer.get_logger().info(f"Truncating table {table_name}")
+
+            # Execute truncate
+            cursor.execute(f"TRUNCATE TABLE {table_name}")
+            self.conn.commit()
+
+            # Mark table as truncated
+            self._truncated_tables.add(table_name)
+            singer.get_logger().info(f"Successfully truncated table {table_name}")
+
+        except SnowflakeError as e:
+            error_msg = f"Error truncating table {table_name}: {str(e)}"
+            singer.get_logger().error(error_msg)
+            self.log_error(table_name, error_msg)
+            raise
+        finally:
+            cursor.close()
+
     def insert_into_snowflake(self, stream_name: str, record: Dict) -> None:
         """Buffer a record for bulk insert into Snowflake.
 
@@ -172,6 +203,10 @@ class SpaceXTapBase:
             stream_name (str): The name of the target table
             record (Dict): The record to insert
         """
+        # Truncate table before first insertion if not already truncated
+        if stream_name not in self._truncated_tables:
+            self._truncate_table(stream_name)
+
         # Initialize buffer for stream if not exists
         if stream_name not in self._buffer:
             self._buffer[stream_name] = []

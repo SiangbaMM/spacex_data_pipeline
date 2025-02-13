@@ -1,6 +1,6 @@
 {{
     config(
-        alias='pbl_spacex_data_fct_launch_costs',
+        alias='pbl_spacex_data_fct__launch_costs',
         materialized='incremental',
         unique_key='launch_id'
     )

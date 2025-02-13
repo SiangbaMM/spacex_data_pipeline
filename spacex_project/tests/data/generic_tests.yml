@@ -1,0 +1,169 @@
+version: 2
+
+# Import custom tests
+tests:
+  - tests/data/custom_data_tests.sql
+
+models:
+  # Staging tests
+  - name: stg_spacex_data__launches
+    columns:
+      - name: launch_date_utc
+        tests:
+          - not_null
+          - launch_date_not_future
+      - name: launch_date_precision
+        description: The status of a launches
+        tests:
+          - accepted_values:
+              values: ["half", "quarter", "year", "month", "day", "hour"]
+              config:
+                severity: warn
+
+  - name: stg_spacex_data__payloads
+    columns:
+      - name: payload_mass_kg
+        tests:
+          - payload_mass_within_bounds
+
+  - name: stg_spacex_data__capsules
+    columns:
+      - name: capsule_id
+        description: This is a unique identifier of a Space X capsule
+        tests:
+          - unique
+          - not_null
+      - name: capsule_status
+        description: The status of a launches' capsule
+        tests:
+          - accepted_values:
+              values: ["unknown", "active", "retired", "destroyed"]
+              config:
+                severity: warn
+
+  - name: stg_spacex_data__cores
+    columns:
+      - name: core_id
+        description: This is a unique identifier of a Space X cores
+        tests:
+          - unique
+          - not_null
+      - name: core_status
+        description: The status of a launches' core
+        tests:
+          - accepted_values:
+              values: ["active", "inactive", "unknown", "expended", "lost", "retired"]
+              config:
+                severity: warn
+
+  - name: stg_spacex_data__crew
+    columns:
+      - name: crew_status
+        description: The status of a launches' core
+        tests:
+          - accepted_values:
+              values: ["active", "inactive", "retired", "unknown"]
+              config:
+                severity: warn
+
+  - name: stg_spacex_data__launchpads
+    columns:
+      - name: launchpad_status
+        description: The status of a launches' core
+        tests:
+          - accepted_values:
+              values: ["active", "inactive", "unknown", "retired", "lost", "under construction"]
+              config:
+                severity: warn
+
+
+  # Compute tests
+  - name: cmp_bridge__launch_cores
+    columns:
+      - name: bridge_launch_core_launch_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launches')
+              field: launch_id
+      - name: bridge_launch_core_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('pbl_spacex_data_dim__cores')
+              field: core_id
+
+
+  # Published tests
+  # Dim tables
+  - name: pbl_spacex_data_dim__company
+    columns:
+      - name: company_name
+        tests:
+          - unique
+          - not_null
+
+  - name: pbl_spacex_data_dim__cores
+    description: Dimension table for booster cores
+    columns:
+      - name: core_reuse_count
+        tests:
+          - valid_core_reuse_count
+      - name: core_id
+        description: Unique identifier for the core
+        tests:
+          - unique
+          - not_null
+      - name: core_serial
+        description: Core serial number
+        tests:
+          - not_null
+          - unique
+
+  - name: pbl_spacex_data_dim__payloads
+    description: Dimension table for mission payloads
+    columns:
+      - name: payload_id
+        description: Unique identifier for the payload
+        tests:
+          - unique
+          - not_null
+
+  - name: pbl_spacex_data_dim__rockets
+    description: Dimension table for rockets
+    columns:
+      - name: rocket_id
+        description: Primary key for the rocket
+        tests:
+          - unique
+          - not_null
+      - name: rocket_name
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Falcon 1', 'Falcon 9', 'Falcon Heavy', 'Starship']
+
+
+  # Fact tables
+  - name: pbl_spacex_data_fct__launch_costs
+    columns:
+      - name: launch_id
+        description: Primary key for the launch
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launches')
+              field: launch_id
+      - name: total_payload_mass_kg
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+          - reasonable_payload_mass_kg
+      - name: launch_date_utc
+        tests:
+          - launch_date_not_future
+      - name: launch_is_success
+        tests:
+          - success_rate_valid_range

@@ -8,13 +8,14 @@ CREATE ROLE IF NOT EXISTS spacex_data_dev_secadmin;
 CREATE ROLE IF NOT EXISTS spacex_data_dev_sysadmin;
 
 -- Hiérarchie des rôles
+GRANT CREATE USER,
+CREATE ROLE ON ACCOUNT TO ROLE spacex_data_dev_secadmin;
+
 GRANT ROLE spacex_data_dev_secadmin TO ROLE spacex_data_dev_admin;
 
 GRANT ROLE spacex_data_dev_sysadmin TO ROLE spacex_data_dev_admin;
 
 GRANT ROLE spacex_data_dev_sysadmin TO ROLE SYSADMIN;
-
-GRANT ROLE spacex_data_dev_secadmin TO ROLE SYSADMIN;
 
 -- Étape 2 : Création des bases de données
 USE ROLE SYSADMIN;
@@ -45,12 +46,6 @@ GRANT OWNERSHIP ON WAREHOUSE spacex_data_dev_transform_wh TO ROLE spacex_data_de
 
 GRANT OWNERSHIP ON WAREHOUSE spacex_data_dev_ad_hoc_wh TO ROLE spacex_data_dev_sysadmin REVOKE CURRENT GRANTS;
 
--- Étape 4 : Attribution des privilèges pour 'spacex_data_dev'
-USE ROLE SECURITYADMIN;
-
-GRANT CREATE USER,
-CREATE ROLE ON ACCOUNT TO ROLE spacex_data_dev_secadmin;
-
 --GRANT MANAGE GRANTS ON ACCOUNT TO ROLE spacex_data_dev_sysadmin;
--- Étape 7 : Vérification des privilèges
+-- Étape 4 : Vérification des privilèges
 SHOW GRANTS ON DATABASE spacex_data_dev;
