@@ -1,0 +1,5 @@
+singer-python==6.1.0
+jsonschema<3.0.0,>=2.6.0
+requests
+snowflake-connector-python
+pytz

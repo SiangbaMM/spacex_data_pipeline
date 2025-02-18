@@ -1,0 +1,72 @@
+version: 2
+
+# Import custom tests
+tests:
+  - tests/data/custom_data_tests.sql
+
+
+models:
+  - name: pbl_spacex_data_dim__company
+    columns:
+      - name: company_name
+        tests:
+          - unique
+          - not_null
+      - name: company_surrogate_key
+        description: Company surrogate key
+        tests:
+          - valid_temporal_range
+
+  - name: pbl_spacex_data_dim__core
+    description: Dimension table for booster cores
+    columns:
+      - name: core_reuse_count
+        tests:
+          - valid_core_reuse_count
+      - name: core_id
+        description: Unique identifier for the core
+        tests:
+          - unique
+          - not_null
+      - name: core_serial
+        description: Core serial number
+        tests:
+          - not_null
+          - unique
+      - name: core_surrogate_key
+        description: Core surrogate key
+        tests:
+          - valid_temporal_range
+
+  - name: pbl_spacex_data_dim__payload
+    description: Dimension table for mission payloads
+    columns:
+      - name: payload_id
+        description: Unique identifier for the payload
+        tests:
+          - unique
+          - not_null
+      - name: payload_surrogate_key
+        description: Payload surrogate key
+        tests:
+          - valid_temporal_range
+
+  - name: pbl_spacex_data_dim__rocket
+    description: Dimension table for rockets
+    columns:
+      - name: rocket_id
+        description: Primary key for the rocket
+        tests:
+          - unique
+          - not_null
+      - name: rocket_name
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Falcon 1', 'Falcon 9', 'Falcon Heavy', 'Starship']
+              config:
+                severity: warn
+      - name: rocket_surrogate_key
+        description: Rocket surrogate key
+        tests:
+          - valid_temporal_range

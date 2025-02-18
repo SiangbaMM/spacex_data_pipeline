@@ -1,17 +1,29 @@
-import singer                                           # type: ignore
-import requests                                         # type: ignore
 import json
-from include.spacex_tap_base import SpaceXTapBase
+
+import requests  # type: ignore
+import singer  # type: ignore
+
+from .spacex_tap_base import SpaceXTapBase
+
 
 class StarlinkTap(SpaceXTapBase):
-    
+    """StarlinkTap is a SpaceXTapBase sub class in charge of \
+        SpaceX Starlink entity ingestion
+
+    Args:
+    - base_url (str) : The root url of v4 SpaceX API
+    - config_path (str) : Config file that contains database credentials
+    """
+
+    def __init__(self, base_url: str, config_path: str):
+        """Inherit base_url and config_path from SpaceXTapBase"""
+        super().__init__(base_url, config_path)
+
     def fetch_starlink(self) -> None:
-        """
-        Fetch and process Starlink satellites data from SpaceX API with Snowflake-compatible schema.
-        """
-        
-        stream_name="STG_SPACEX_DATA_STARLINK"
-        
+        """Fetch and process Starlink satellites data from SpaceX API with \
+            Snowflake-compatible schema."""
+        stream_name = "STG_SPACEX_DATA_STARLINK"
+
         try:
             # Fetch data from the starlink endpoint
             response = requests.get(self.base_url + "starlink")
@@ -24,96 +36,47 @@ class StarlinkTap(SpaceXTapBase):
                 "properties": {
                     "STARLINK_ID": {
                         "type": ["string", "null"],
-                        "description": "Unique identifier for the Starlink satellite"
+                        "description": "Unique identifier for the Starlink satellite",
                     },
-                    "VERSION": {
-                        "type": ["string", "null"],
-                        "maxLength": 50
-                    },
+                    "VERSION": {"type": ["string", "null"], "maxLength": 50},
                     "LAUNCH": {
                         "type": ["string", "null"],
-                        "description": "Associated launch ID"
+                        "description": "Associated launch ID",
                     },
-                    "LONGITUDE": {
-                        "type": ["number", "null"]
-                    },
-                    "LATITUDE": {
-                        "type": ["number", "null"]
-                    },
-                    "HEIGHT_KM": {
-                        "type": ["number", "null"]
-                    },
-                    "VELOCITY_KMS": {
-                        "type": ["number", "null"]
-                    },
+                    "LONGITUDE": {"type": ["number", "null"]},
+                    "LATITUDE": {"type": ["number", "null"]},
+                    "HEIGHT_KM": {"type": ["number", "null"]},
+                    "VELOCITY_KMS": {"type": ["number", "null"]},
                     "SPACETRACK": {
                         "type": ["string", "null"],
-                        "description": "Space-Track.org data stored as JSON string"
+                        "description": "Space-Track.org data stored as JSON string",
                     },
-                    "LAUNCH_DATE": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "OBJECT_NAME": {
-                        "type": ["string", "null"],
-                        "maxLength": 100
-                    },
-                    "OBJECT_ID": {
-                        "type": ["string", "null"],
-                        "maxLength": 50
-                    },
-                    "EPOCH": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "PERIOD_MIN": {
-                        "type": ["number", "null"]
-                    },
-                    "INCLINATION_DEG": {
-                        "type": ["number", "null"]
-                    },
-                    "APOAPSIS_KM": {
-                        "type": ["number", "null"]
-                    },
-                    "PERIAPSIS_KM": {
-                        "type": ["number", "null"]
-                    },
-                    "ECCENTRICITY": {
-                        "type": ["number", "null"]
-                    },
-                    "MEAN_MOTION": {
-                        "type": ["number", "null"]
-                    },
-                    "MEAN_ANOMALY": {
-                        "type": ["number", "null"]
-                    },
-                    "ARG_OF_PERICENTER": {
-                        "type": ["number", "null"]
-                    },
+                    "LAUNCH_DATE": {"type": ["string", "null"], "format": "date-time"},
+                    "OBJECT_NAME": {"type": ["string", "null"], "maxLength": 100},
+                    "OBJECT_ID": {"type": ["string", "null"], "maxLength": 50},
+                    "EPOCH": {"type": ["string", "null"], "format": "date-time"},
+                    "PERIOD_MIN": {"type": ["number", "null"]},
+                    "INCLINATION_DEG": {"type": ["number", "null"]},
+                    "APOAPSIS_KM": {"type": ["number", "null"]},
+                    "PERIAPSIS_KM": {"type": ["number", "null"]},
+                    "ECCENTRICITY": {"type": ["number", "null"]},
+                    "MEAN_MOTION": {"type": ["number", "null"]},
+                    "MEAN_ANOMALY": {"type": ["number", "null"]},
+                    "ARG_OF_PERICENTER": {"type": ["number", "null"]},
                     "RAAN": {
                         "type": ["number", "null"],
-                        "description": "Right Ascension of the Ascending Node"
+                        "description": "Right Ascension of the Ascending Node",
                     },
-                    "SEMI_MAJOR_AXIS_KM": {
-                        "type": ["number", "null"]
-                    },
-                    "CREATED_AT": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "UPDATED_AT": {
-                        "type": ["string", "null"],
-                        "format": "date-time"
-                    },
-                    "RAW_DATA": {"type": ["string", "null"]}
-                }
+                    "SEMI_MAJOR_AXIS_KM": {"type": ["number", "null"]},
+                    "CREATED_AT": {"type": ["string", "null"], "format": "date-time"},
+                    "UPDATED_AT": {"type": ["string", "null"], "format": "date-time"},
+                    "RAW_DATA": {"type": ["string", "null"]},
+                },
             }
 
             # Write schema
             singer.write_schema(
-                stream_name=stream_name,
-                schema=schema,
-                key_properties=["STARLINK_ID"]
+                stream_name=stream_name, schema=schema, key_properties=["STARLINK_ID"]
             )
 
             # Get current time with timezone
@@ -125,69 +88,96 @@ class StarlinkTap(SpaceXTapBase):
                 try:
                     # Extract spacetrack data if available
                     spacetrack = satellite.get("spaceTrack", {})
-                    
+
                     # Transform data for Snowflake compatibility
                     transformed_satellite = {
                         "STARLINK_ID": satellite.get("id"),
                         "VERSION": satellite.get("version"),
                         "LAUNCH": satellite.get("launch"),
-                        "LONGITUDE": satellite.get("longitude"),
-                        "LATITUDE": satellite.get("latitude"),
-                        "HEIGHT_KM": satellite.get("height_km"),
-                        "VELOCITY_KMS": satellite.get("velocity_kms"),
+                        "LONGITUDE": self._prepare_value_for_snowflake(
+                            satellite.get("longitude"), is_numeric=True
+                        ),
+                        "LATITUDE": self._prepare_value_for_snowflake(
+                            satellite.get("latitude"), is_numeric=True
+                        ),
+                        "HEIGHT_KM": self._prepare_value_for_snowflake(
+                            satellite.get("height_km"), is_numeric=True
+                        ),
+                        "VELOCITY_KMS": self._prepare_value_for_snowflake(
+                            satellite.get("velocity_kms"), is_numeric=True
+                        ),
                         "SPACETRACK": json.dumps(spacetrack),
                         "LAUNCH_DATE": spacetrack.get("LAUNCH_DATE"),
                         "OBJECT_NAME": spacetrack.get("OBJECT_NAME"),
                         "OBJECT_ID": spacetrack.get("OBJECT_ID"),
                         "EPOCH": spacetrack.get("EPOCH"),
-                        "PERIOD_MIN": spacetrack.get("PERIOD"),
-                        "INCLINATION_DEG": spacetrack.get("INCLINATION"),
-                        "APOAPSIS_KM": spacetrack.get("APOAPSIS"),
-                        "PERIAPSIS_KM": spacetrack.get("PERIAPSIS"),
-                        "ECCENTRICITY": spacetrack.get("ECCENTRICITY"),
-                        "MEAN_MOTION": spacetrack.get("MEAN_MOTION"),
-                        "MEAN_ANOMALY": spacetrack.get("MEAN_ANOMALY"),
-                        "ARG_OF_PERICENTER": spacetrack.get("ARG_OF_PERICENTER"),
-                        "RAAN": spacetrack.get("RAAN"),
-                        "SEMI_MAJOR_AXIS_KM": spacetrack.get("SEMI_MAJOR_AXIS"),
+                        "PERIOD_MIN": self._prepare_value_for_snowflake(
+                            spacetrack.get("PERIOD"), is_numeric=True
+                        ),
+                        "INCLINATION_DEG": self._prepare_value_for_snowflake(
+                            spacetrack.get("INCLINATION"), is_numeric=True
+                        ),
+                        "APOAPSIS_KM": self._prepare_value_for_snowflake(
+                            spacetrack.get("APOAPSIS"), is_numeric=True
+                        ),
+                        "PERIAPSIS_KM": self._prepare_value_for_snowflake(
+                            spacetrack.get("PERIAPSIS"), is_numeric=True
+                        ),
+                        "ECCENTRICITY": self._prepare_value_for_snowflake(
+                            spacetrack.get("ECCENTRICITY"), is_numeric=True
+                        ),
+                        "MEAN_MOTION": self._prepare_value_for_snowflake(
+                            spacetrack.get("MEAN_MOTION"), is_numeric=True
+                        ),
+                        "MEAN_ANOMALY": self._prepare_value_for_snowflake(
+                            spacetrack.get("MEAN_ANOMALY"), is_numeric=True
+                        ),
+                        "ARG_OF_PERICENTER": self._prepare_value_for_snowflake(
+                            spacetrack.get("ARG_OF_PERICENTER"), is_numeric=True
+                        ),
+                        "RAAN": self._prepare_value_for_snowflake(
+                            spacetrack.get("RAAN"), is_numeric=True
+                        ),
+                        "SEMI_MAJOR_AXIS_KM": self._prepare_value_for_snowflake(
+                            spacetrack.get("SEMI_MAJOR_AXIS"), is_numeric=True
+                        ),
                         "CREATED_AT": current_time_str,
                         "UPDATED_AT": current_time_str,
-                        "RAW_DATA": json.dumps(satellite)
+                        "RAW_DATA": json.dumps(satellite),
                     }
 
                     # Write record with timezone-aware timestamp
                     singer.write_record(
                         stream_name=stream_name,
                         record=transformed_satellite,
-                        time_extracted=current_time
+                        time_extracted=current_time,
                     )
-                    
+
+                    # Insert data into Snowflake
+                    self.insert_into_snowflake(stream_name, transformed_satellite)
+
                 except Exception as transform_error:
                     self.log_error(
                         table_name=stream_name,
-                        error_message=f"Data transformation error: {str(transform_error)}",
-                        error_data=satellite
+                        error_message=f"Data transformation error: \
+                            {str(transform_error)}",
+                        error_data=satellite,
                     )
                     continue  # Continue processing other satellite
 
             # Write state
-            state = {
-                "STG_SPACEX_DATA_STARLINK": {
-                    "last_sync": current_time_str
-                }
-            }
+            state = {"STG_SPACEX_DATA_STARLINK": {"last_sync": current_time_str}}
             singer.write_state(state)
-        
+
         except requests.exceptions.RequestException as api_error:
             self.log_error(
                 table_name=stream_name,
-                error_message=f"API request error: {str(api_error)}"
+                error_message=f"API request error: {str(api_error)}",
             )
             raise
 
         except Exception as e:
             self.log_error(
-                table_name=stream_name,
-                error_message=f"Unexpected error: {str(e)}"
+                table_name=stream_name, error_message=f"Unexpected error: {str(e)}"
             )
             raise

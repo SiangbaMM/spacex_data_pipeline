@@ -14,7 +14,7 @@ from
     launches l
     inner join rockets r on l.rocket = r.id;
 
---Retrieve the more recent launch 
+--Retrieve the more recent launch
 ---Using a Subquery
 select
     *

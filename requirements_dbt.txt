@@ -1,0 +1,25 @@
+# Core dbt packages
+dbt-core==1.9.2
+dbt-adapters==1.14.0
+dbt-common==1.14.0
+dbt-extractor==0.5.1
+dbt-semantic-interfaces==0.7.4
+dbt-snowflake==1.9.1
+
+# Snowflake dependencies
+snowflake-connector-python==3.13.2
+snowflake-sqlalchemy==1.7.3
+
+# Required dependencies with specific versions
+jsonschema>=4.0.0,<5.0.0  # Required by dbt packages
+agate==1.9.1
+Jinja2==3.1.5
+sqlparse==0.5.3
+
+# Utility packages
+PyYAML==6.0.2
+packaging==24.2
+typing_extensions==4.12.2
+python-dateutil==2.9.0.post0
+pytz==2025.1
+requests==2.32.3

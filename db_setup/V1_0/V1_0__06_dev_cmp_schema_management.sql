@@ -1,6 +1,6 @@
 use role spacex_data_dev_secadmin;
 
--- role creation 
+-- role creation
 create role if not exists _cmp_spd_dev_sr comment = 'Role with read privileges on SpaceX data compute schema of the development environment';
 
 create role if not exists _cmp_spd_dev_sw comment = 'Role with write privileges on SpaceX data compute schema of the development environment';

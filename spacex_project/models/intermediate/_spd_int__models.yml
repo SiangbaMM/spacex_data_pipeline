@@ -1,0 +1,82 @@
+version: 2
+
+models:
+  - name: cmp_bridge__launch_core
+    description: Bridge table connecting launches to cores used in the mission
+    columns:
+      - name: bridge_launch_core_launch_id
+        description: Foreign key to the launch
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launch')
+              field: launch_id
+      - name: bridge_launch_core_id
+        description: Foreign key to the core
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__core')
+              field: core_id
+
+  - name: cmp_bridge__launch_crew
+    description: Bridge table connecting launches to crew members
+    columns:
+      - name: bridge_launch_crew_launch_id
+        description: Foreign key to the launch
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launch')
+              field: launch_id
+      - name: bridge_launch_crew_id
+        description: Foreign key to the crew member
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__crew')
+              field: crew_id
+
+  - name: cmp_bridge__launch_payload
+    description: Bridge table connecting launches to payloads
+    columns:
+      - name: bridge_launch_payload_launch_id
+        description: Foreign key to the launch
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launch')
+              field: launch_id
+      - name: bridge_launch_payload_id
+        description: Foreign key to the payload
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__payload')
+              field: payload_id
+
+  - name: cmp_bridge__launch_ship
+    description: Bridge table connecting launches to ships used in the mission
+    columns:
+      - name: bridge_launch_ship_launch_id
+        description: Foreign key to the launch
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launch')
+              field: launch_id
+      - name: bridge_launch_ship_id
+        description: Foreign key to the ship
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__ship')
+              field: ship_id
+      - name: bridge_launch_ship_role
+        description: Role of the ship in the launch (booster recovery, etc.)
+        tests:
+          - not_null
+      - name: bridge_launch_ship_is_active
+        description: Whether the ship is currently active
+        tests:
+          - not_null

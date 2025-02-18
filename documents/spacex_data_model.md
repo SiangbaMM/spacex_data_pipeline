@@ -1,522 +1,403 @@
 # SpaceX Data Model Documentation
 
-## Entity Relationships Diagram
+## Schema Overview
+
+### Staging Layer (STG)
+
+Raw data from SpaceX API with minimal transformations.
+
+### Compute Layer (CMP)
+
+Bridge tables and intermediate calculations.
+
+### Published Layer (PBL)
+
+Analytics-ready dimension and fact tables.
+
+## Table Specifications
+
+### Staging Tables
+
+#### STG_SPACEX_DATA_COMPANY
+
+| Column                    | Type          | Description                   |
+| ------------------------- | ------------- | ----------------------------- |
+| company_id                | VARCHAR       | Unique identifier for company |
+| company_name              | VARCHAR       | Company name                  |
+| company_founder           | VARCHAR       | Company founder               |
+| company_founding_date     | INTEGER       | Year company was founded      |
+| company_employee_count    | INTEGER       | Number of employees           |
+| company_vehicle_count     | INTEGER       | Number of vehicles            |
+| company_launch_site_count | INTEGER       | Number of launch sites        |
+| company_test_site_count   | INTEGER       | Number of test sites          |
+| company_valuation         | DECIMAL(18,2) | Company valuation in USD      |
+
+#### STG_SPACEX_DATA_LAUNCH
+
+| Column                     | Type      | Description                  |
+| -------------------------- | --------- | ---------------------------- |
+| launch_id                  | VARCHAR   | Unique identifier for launch |
+| launch_date_utc            | TIMESTAMP | Launch date and time         |
+| launch_success             | BOOLEAN   | Launch success indicator     |
+| launch_rocket_id           | VARCHAR   | Reference to rocket used     |
+| launch_details             | VARCHAR   | Launch details               |
+| launch_crew_id             | ARRAY     | Array of crew member IDs     |
+| launch_payload_id          | ARRAY     | Array of payload IDs         |
+| launch_core_serial_numbers | ARRAY     | Array of core serial numbers |
+
+#### STG_SPACEX_DATA_ROCKET
+
+| Column                  | Type          | Description                  |
+| ----------------------- | ------------- | ---------------------------- |
+| rocket_id               | VARCHAR       | Unique identifier for rocket |
+| rocket_name             | VARCHAR       | Rocket name                  |
+| rocket_type             | VARCHAR       | Rocket type                  |
+| rocket_active           | BOOLEAN       | Active status                |
+| rocket_stages           | INTEGER       | Number of stages             |
+| rocket_boosters         | INTEGER       | Number of boosters           |
+| rocket_cost_per_launch  | DECIMAL(18,2) | Cost per launch in USD       |
+| rocket_success_rate_pct | DECIMAL(5,2)  | Success rate percentage      |
+
+### Compute Layer Tables
+
+#### CMP_BRIDGE_LAUNCH_CORE
+
+| Column                       | Type    | Description                         |
+| ---------------------------- | ------- | ----------------------------------- |
+| bridge_launch_core_id        | VARCHAR | Unique identifier for bridge record |
+| bridge_launch_core_launch_id | VARCHAR | Reference to launch                 |
+| bridge_launch_core_serial    | VARCHAR | Core serial number                  |
+| landing_success              | BOOLEAN | Landing success indicator           |
+| landing_type                 | VARCHAR | Type of landing                     |
+| landing_vehicle              | VARCHAR | Landing vehicle used                |
+
+#### CMP_BRIDGE_LAUNCH_CREW
+
+| Column                       | Type    | Description                         |
+| ---------------------------- | ------- | ----------------------------------- |
+| bridge_launch_crew_id        | VARCHAR | Unique identifier for bridge record |
+| bridge_launch_crew_launch_id | VARCHAR | Reference to launch                 |
+| bridge_launch_crew_member_id | VARCHAR | Reference to crew member            |
+| role                         | VARCHAR | Crew member role                    |
+
+#### CMP_BRIDGE\_\_LAUNCH_PAYLOADS
+
+| Column                          | Type          | Description                         |
+| ------------------------------- | ------------- | ----------------------------------- |
+| bridge_launch_payload_id        | VARCHAR       | Unique identifier for bridge record |
+| bridge_launch_payload_launch_id | VARCHAR       | Reference to launch                 |
+| bridge_launch_payload_id        | VARCHAR       | Reference to payload                |
+| payload_type                    | VARCHAR       | Type of payload                     |
+| payload_mass_kg                 | DECIMAL(10,2) | Mass of payload in kg               |
+| orbit                           | VARCHAR       | Target orbit                        |
+
+### Published Layer Tables
+
+All dimension tables (except time dimension) implement Type 2 Slowly Changing Dimension (SCD) pattern with:
+
+- Surrogate key for each version of the record
+- valid_from/valid_to timestamps for temporal validity
+- is_current boolean flag for current version
+- Initial load handling with proper null values
+- Change detection logic for updates
+
+#### PBL_SPACEX_DATA_DIM\_\_CAPSULES
+
+| Column                 | Type      | Description               |
+| ---------------------- | --------- | ------------------------- |
+| capsule_surrogate_key  | VARCHAR   | Surrogate key             |
+| capsule_id             | VARCHAR   | Natural key               |
+| capsule_serial         | VARCHAR   | Serial number             |
+| capsule_status         | VARCHAR   | Current status            |
+| capsule_reuse_count    | INTEGER   | Number of reuses          |
+| capsule_water_landings | INTEGER   | Water landing count       |
+| capsule_land_landings  | INTEGER   | Land landing count        |
+| valid_from             | TIMESTAMP | SCD Type 2 validity start |
+| valid_to               | TIMESTAMP | SCD Type 2 validity end   |
+| is_current             | BOOLEAN   | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_COMPANY
+
+| Column         | Type          | Description               |
+| -------------- | ------------- | ------------------------- |
+| company_id     | VARCHAR       | Primary key               |
+| company_name   | VARCHAR       | Company name              |
+| founded_date   | DATE          | Company founding date     |
+| founder        | VARCHAR       | Company founder           |
+| employee_count | INTEGER       | Number of employees       |
+| valuation_usd  | DECIMAL(18,2) | Company valuation         |
+| valid_from     | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to       | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current     | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_CORES
+
+| Column             | Type      | Description                    |
+| ------------------ | --------- | ------------------------------ |
+| core_surrogate_key | VARCHAR   | Surrogate key                  |
+| core_id            | VARCHAR   | Natural key                    |
+| core_serial        | VARCHAR   | Serial number                  |
+| core_block         | VARCHAR   | Block version                  |
+| core_status        | VARCHAR   | Current status                 |
+| core_reuse_count   | INTEGER   | Number of reuses               |
+| core_rtls_attempts | INTEGER   | Return to launch site attempts |
+| core_rtls_landings | INTEGER   | Successful RTLS landings       |
+| core_asds_attempts | INTEGER   | Drone ship landing attempts    |
+| core_asds_landings | INTEGER   | Successful drone ship landings |
+| valid_from         | TIMESTAMP | SCD Type 2 validity start      |
+| valid_to           | TIMESTAMP | SCD Type 2 validity end        |
+| is_current         | BOOLEAN   | Current record indicator       |
+
+#### PBL_SPACEX_DATA_DIM\_\_CREW
+
+| Column             | Type      | Description               |
+| ------------------ | --------- | ------------------------- |
+| crew_surrogate_key | VARCHAR   | Surrogate key             |
+| crew_id            | VARCHAR   | Natural key               |
+| crew_name          | VARCHAR   | Crew member name          |
+| crew_agency        | VARCHAR   | Space agency              |
+| crew_image_url     | VARCHAR   | Image URL                 |
+| crew_wikipedia_url | VARCHAR   | Wikipedia URL             |
+| crew_status        | VARCHAR   | Current status            |
+| valid_from         | TIMESTAMP | SCD Type 2 validity start |
+| valid_to           | TIMESTAMP | SCD Type 2 validity end   |
+| is_current         | BOOLEAN   | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_DRAGONS
+
+| Column                          | Type          | Description               |
+| ------------------------------- | ------------- | ------------------------- |
+| dragon_surrogate_key            | VARCHAR       | Surrogate key             |
+| dragon_id                       | VARCHAR       | Natural key               |
+| dragon_name                     | VARCHAR       | Dragon name               |
+| dragon_type                     | VARCHAR       | Dragon type               |
+| dragon_crew_capacity            | INTEGER       | Crew capacity             |
+| dragon_orbit_duration_yr        | INTEGER       | Orbit duration in years   |
+| dragon_dry_mass_kg              | DECIMAL(10,2) | Dry mass in kg            |
+| dragon_first_flight_at          | TIMESTAMP     | First flight date         |
+| dragon_heat_shield_material     | VARCHAR       | Heat shield material      |
+| dragon_heat_shield_size_meters  | DECIMAL(10,2) | Heat shield size          |
+| dragon_heat_shield_temp_degrees | DECIMAL(10,2) | Heat shield temperature   |
+| valid_from                      | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to                        | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current                      | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_HISTORY
+
+| Column                   | Type      | Description               |
+| ------------------------ | --------- | ------------------------- |
+| history_surrogate_key    | VARCHAR   | Surrogate key             |
+| history_id               | VARCHAR   | Natural key               |
+| history_title            | VARCHAR   | Event title               |
+| history_event_date_utc   | TIMESTAMP | Event date                |
+| history_details          | VARCHAR   | Event details             |
+| history_link_article_url | VARCHAR   | Article URL               |
+| history_link_reddit_url  | VARCHAR   | Reddit URL                |
+| valid_from               | TIMESTAMP | SCD Type 2 validity start |
+| valid_to                 | TIMESTAMP | SCD Type 2 validity end   |
+| is_current               | BOOLEAN   | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_LANDPADS
+
+| Column                    | Type          | Description               |
+| ------------------------- | ------------- | ------------------------- |
+| landpad_surrogate_key     | VARCHAR       | Surrogate key             |
+| landpad_id                | VARCHAR       | Natural key               |
+| landpad_name              | VARCHAR       | Landpad name              |
+| landpad_full_name         | VARCHAR       | Full name                 |
+| landpad_status            | VARCHAR       | Current status            |
+| landpad_type              | VARCHAR       | Landpad type              |
+| landpad_locality          | VARCHAR       | Location locality         |
+| landpad_region            | VARCHAR       | Location region           |
+| landpad_latitude          | DECIMAL(10,6) | Latitude                  |
+| landpad_longitude         | DECIMAL(10,6) | Longitude                 |
+| landpad_landing_attempts  | INTEGER       | Landing attempts          |
+| landpad_landing_successes | INTEGER       | Successful landings       |
+| valid_from                | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to                  | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current                | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_LAUNCHPADS
+
+| Column                     | Type          | Description               |
+| -------------------------- | ------------- | ------------------------- |
+| launchpad_surrogate_key    | VARCHAR       | Surrogate key             |
+| launchpad_id               | VARCHAR       | Natural key               |
+| launchpad_name             | VARCHAR       | Launchpad name            |
+| launchpad_full_name        | VARCHAR       | Full name                 |
+| launchpad_status           | VARCHAR       | Current status            |
+| launchpad_locality         | VARCHAR       | Location locality         |
+| launchpad_region           | VARCHAR       | Location region           |
+| launchpad_latitude         | DECIMAL(10,6) | Latitude                  |
+| launchpad_longitude        | DECIMAL(10,6) | Longitude                 |
+| launchpad_launch_attempts  | INTEGER       | Launch attempts           |
+| launchpad_launch_successes | INTEGER       | Successful launches       |
+| valid_from                 | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to                   | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current                 | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_PAYLOADS
+
+| Column                   | Type          | Description               |
+| ------------------------ | ------------- | ------------------------- |
+| payload_surrogate_key    | VARCHAR       | Surrogate key             |
+| payload_id               | VARCHAR       | Natural key               |
+| payload_name             | VARCHAR       | Payload name              |
+| payload_type             | VARCHAR       | Payload type              |
+| payload_reused           | BOOLEAN       | Reuse indicator           |
+| payload_mass_kg          | DECIMAL(10,2) | Mass in kg                |
+| payload_orbit            | VARCHAR       | Orbit type                |
+| payload_reference_system | VARCHAR       | Reference system          |
+| valid_from               | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to                 | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current               | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_ROCKETS
+
+| Column                  | Type          | Description               |
+| ----------------------- | ------------- | ------------------------- |
+| rocket_surrogate_key    | VARCHAR       | Surrogate key             |
+| rocket_id               | VARCHAR       | Natural key               |
+| rocket_name             | VARCHAR       | Rocket name               |
+| rocket_type             | VARCHAR       | Rocket type               |
+| rocket_company          | VARCHAR       | Company name              |
+| rocket_country          | VARCHAR       | Country of origin         |
+| rocket_description      | VARCHAR       | Description               |
+| rocket_height_meters    | DECIMAL(10,2) | Height in meters          |
+| rocket_diameter_meters  | DECIMAL(10,2) | Diameter in meters        |
+| rocket_mass_kg          | DECIMAL(10,2) | Mass in kg                |
+| rocket_stages           | INTEGER       | Number of stages          |
+| rocket_boosters         | INTEGER       | Number of boosters        |
+| rocket_cost_per_launch  | DECIMAL(18,2) | Cost per launch           |
+| rocket_success_rate_pct | DECIMAL(5,2)  | Success rate              |
+| rocket_first_flight     | DATE          | First flight date         |
+| rocket_is_active        | BOOLEAN       | Active status             |
+| valid_from              | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to                | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current              | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_SHIPS
+
+| Column             | Type          | Description               |
+| ------------------ | ------------- | ------------------------- |
+| ship_surrogate_key | VARCHAR       | Surrogate key             |
+| ship_id            | VARCHAR       | Natural key               |
+| ship_name          | VARCHAR       | Ship name                 |
+| ship_type          | VARCHAR       | Ship type                 |
+| ship_roles         | ARRAY         | Array of roles            |
+| ship_is_active     | BOOLEAN       | Active status             |
+| ship_mass_kg       | DECIMAL(10,2) | Mass in kg                |
+| ship_year_built    | INTEGER       | Year built                |
+| ship_home_port     | VARCHAR       | Home port                 |
+| valid_from         | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to           | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current         | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_STARLINK
+
+| Column                          | Type          | Description               |
+| ------------------------------- | ------------- | ------------------------- |
+| starlink_surrogate_key          | VARCHAR       | Surrogate key             |
+| starlink_id                     | VARCHAR       | Natural key               |
+| starlink_launch_id              | VARCHAR       | Launch reference          |
+| starlink_longitude              | DECIMAL(10,6) | Longitude                 |
+| starlink_latitude               | DECIMAL(10,6) | Latitude                  |
+| starlink_height_km              | DECIMAL(10,2) | Height in km              |
+| starlink_velocity_kms           | DECIMAL(10,2) | Velocity in km/s          |
+| starlink_spaceTrack_object_name | VARCHAR       | Space track object name   |
+| valid_from                      | TIMESTAMP     | SCD Type 2 validity start |
+| valid_to                        | TIMESTAMP     | SCD Type 2 validity end   |
+| is_current                      | BOOLEAN       | Current record indicator  |
+
+#### PBL_SPACEX_DATA_DIM\_\_TIME
+
+| Column      | Type    | Description          |
+| ----------- | ------- | -------------------- |
+| full_date   | DATE    | Calendar date        |
+| year        | INTEGER | Year number          |
+| quarter     | INTEGER | Quarter number (1-4) |
+| month       | INTEGER | Month number (1-12)  |
+| week        | INTEGER | Week number (1-53)   |
+| day         | INTEGER | Day of month (1-31)  |
+| day_of_week | INTEGER | Day of week (1-7)    |
+| is_weekend  | BOOLEAN | Weekend indicator    |
+
+#### PBL_SPACEX_DATA_FCT\_\_LAUNCH_COSTS
+
+| Column                | Type          | Description              |
+| --------------------- | ------------- | ------------------------ |
+| launch_id             | VARCHAR       | Primary key              |
+| launch_date_utc       | TIMESTAMP     | Launch date and time     |
+| rocket_id             | VARCHAR       | Reference to rocket      |
+| success               | BOOLEAN       | Launch success indicator |
+| total_payload_mass_kg | DECIMAL(10,2) | Total payload mass       |
+| launch_cost_usd       | DECIMAL(18,2) | Launch cost              |
+| cost_per_kg           | DECIMAL(18,2) | Cost per kg              |
+| payload_count         | INTEGER       | Number of payloads       |
+| crew_count            | INTEGER       | Number of crew members   |
+
+## Relationships
+
+### Primary Key - Foreign Key Relationships
 
 ```mermaid
 erDiagram
-    LAUNCH ||--o{ CORE : uses
-    LAUNCH ||--o{ PAYLOAD : carries
-    LAUNCH ||--|| LAUNCHPAD : launches_from
-    LAUNCH ||--|| ROCKET : uses
-    LAUNCH ||--o{ CREW : carries
-    LAUNCH ||--o{ SHIP : supported_by
-    CORE ||--|| ROCKET : belongs_to
-    PAYLOAD ||--|| DRAGON : carried_by
-    DRAGON ||--|| ROCKET : compatible_with
-    SHIP ||--o{ CORE : recovers
-    CREW }|--|| DRAGON : assigned_to
+    PBL_SPACEX_DATA_FCT__LAUNCH ||--o{ CMP_BRIDGE__LAUNCH_CORES : "has"
+    PBL_SPACEX_DATA_FCT__LAUNCH ||--o{ CMP_BRIDGE__LAUNCH_CREW : "has"
+    PBL_SPACEX_DATA_FCT__LAUNCH ||--o{ CMP_BRIDGE__LAUNCH_PAYLOADS : "has"
+    PBL_SPACEX_DATA_FCT__LAUNCH ||--o{ CMP_BRIDGE__LAUNCH_SHIPS : "has"
+    PBL_SPACEX_DATA_FCT__LAUNCH }o--|| PBL_SPACEX_DATA_DIM__ROCKETS : "uses"
+    PBL_SPACEX_DATA_FCT__LAUNCH }o--|| PBL_SPACEX_DATA_DIM__LAUNCHPADS : "launches from"
+    PBL_SPACEX_DATA_FCT__LAUNCH }o--|| PBL_SPACEX_DATA_DIM__TIME : "occurs on"
+    CMP_BRIDGE__LAUNCH_CORES }o--|| PBL_SPACEX_DATA_DIM__CORES : "references"
+    CMP_BRIDGE__LAUNCH_CORES }o--|| PBL_SPACEX_DATA_DIM__LANDPADS : "lands at"
+    CMP_BRIDGE__LAUNCH_CREW }o--|| PBL_SPACEX_DATA_DIM__CREW : "includes"
+    CMP_BRIDGE__LAUNCH_CREW }o--|| PBL_SPACEX_DATA_DIM__DRAGONS : "rides in"
+    CMP_BRIDGE__LAUNCH_PAYLOADS }o--|| PBL_SPACEX_DATA_DIM__PAYLOADS : "carries"
+    CMP_BRIDGE__LAUNCH_SHIPS }o--|| PBL_SPACEX_DATA_DIM__SHIPS : "supported by"
+    PBL_SPACEX_DATA_FCT__STARLINK }o--|| PBL_SPACEX_DATA_DIM__STARLINK : "tracks"
+    PBL_SPACEX_DATA_FCT__STARLINK }o--|| PBL_SPACEX_DATA_FCT__LAUNCH : "deployed by"
 ```
 
-## Conceptual Model
+## Data Types and Conventions
 
-### Core Entities
+### Naming Conventions
 
-1. Launch
+- Staging tables: STG_SPACEX_DATA\_\_[entity]
+- Compute tables: CMP_BRIDGE\_\_[relationship]
+- Published tables: PBL*SPACEX_DATA*[DIM/FCT]\_\_[entity]
 
-   - Represents a SpaceX launch mission
-   - Contains mission details, timing, and success status
+### Data Types
 
-2. Rocket
+- Identifiers: VARCHAR
+- Dates: DATE or TIMESTAMP
+- Numeric:
+  - Money: DECIMAL(18,2)
+  - Percentages: DECIMAL(5,2)
+  - Weights: DECIMAL(10,2)
+- Boolean: BOOLEAN
+- Text: VARCHAR
 
-   - Represents a rocket type (e.g., Falcon 9, Falcon Heavy)
-   - Contains specifications and capabilities
+### Special Values
 
-3. Core
+- Missing numeric values: NULL
+- Unknown dates: NULL
+- Invalid identifiers: NULL
+- Boolean defaults: FALSE
 
-   - Represents individual rocket cores/boosters
-   - Tracks reuse and recovery information
+## Incremental Loading Strategy
 
-4. Payload
+### Staging Layer
 
-   - Represents cargo being launched
-   - Contains weight, type, and customer information
+- Full refresh for small tables
+- Incremental load for large tables based on modified_at
 
-5. Dragon
+### Compute Layer
 
-   - Represents Dragon spacecraft
-   - Contains capsule specifications and mission capability
+- Rebuild bridge tables on each run
+- Maintain referential integrity
 
-6. Launchpad
+### Published Layer
 
-   - Represents launch facilities
-   - Contains location and status information
-
-7. Ship
-
-   - Represents recovery vessels
-   - Contains vessel specifications and recovery capabilities
-
-8. Crew
-   - Represents astronauts
-   - Contains biographical and mission role information
-
-## Logical Model
-
-### Launch
-
-- launch_id (PK)
-- flight_number
-- name
-- date_utc
-- date_local
-- date_precision
-- rocket_id (FK)
-- launchpad_id (FK)
-- success
-- details
-- upcoming
-- static_fire_date_utc
-- window
-- net
-- failure_time
-- failure_altitude
-- failure_reason
-- ...
-
-### Rocket
-
-- rocket_id (PK)
-- name
-- type
-- description
-- height_meters
-- diameter_meters
-- mass_kg
-- stages
-- boosters
-- cost_per_launch
-- success_rate_pct
-- first_flight
-- country
-- company
-- active
-
-### Core
-
-- core_id (PK)
-- rocket_id (FK)
-- serial
-- block
-- status
-- reuse_count
-- rtls_attempts
-- rtls_landings
-- asds_attempts
-- asds_landings
-- last_update
-- launches (FK_array to Launch)
-
-### Payload
-
-- payload_id (PK)
-- launch_id (FK)
-- dragon_id (FK)
-- name
-- type
-- mass_kg
-- orbit
-- reference_system
-- regime
-- longitude
-- semi_major_axis_km
-- eccentricity
-- periapsis_km
-- apoapsis_km
-- inclination_deg
-- period_min
-- lifespan_years
-- epoch
-- mean_motion
-- raan
-- customers (array)
-- nationalities (array)
-- manufacturers (array)
-
-### Dragon
-
-- dragon_id (PK)
-- name
-- type
-- crew_capacity
-- sidewall_angle_deg
-- orbit_duration_yr
-- dry_mass_kg
-- first_flight
-- heat_shield_material
-- heat_shield_size_meters
-- heat_shield_temp_degrees
-- thrusters_number
-- trunk_volume_cubic_meters
-- trunk_solar_array
-- trunk_unpressurized_cargo
-
-### Launchpad
-
-- launchpad_id (PK)
-- name
-- full_name
-- locality
-- region
-- latitude
-- longitude
-- launch_attempts
-- launch_successes
-- rockets (FK_array to Rocket)
-- status
-- details
-
-### Ship
-
-- ship_id (PK)
-- name
-- legacy_id
-- model
-- type
-- roles (array)
-- active
-- imo
-- mmsi
-- abs
-- class
-- mass_kg
-- year_built
-- home_port
-- status
-- speed_kn
-- course_deg
-- latitude
-- longitude
-- last_ais_update
-
-### Crew
-
-- crew_id (PK)
-- name
-- agency
-- image
-- wikipedia
-- launches (FK_array to Launch)
-- status
-- dragon_id (FK)
-
-## Physical Model
-
-```mermaid
-erDiagram
-    LAUNCHES {
-        string id PK
-        string name
-        date_utc date_utc
-        date_unix int
-        date_local datetime
-        date_precision string
-        boolean upcoming
-        boolean success
-        string details
-        int flight_number
-        string webcast
-        string article
-        string wikipedia
-    }
-
-    ROCKETS {
-        string id PK
-        string name
-        string type
-        boolean active
-        int stages
-        int boosters
-        float cost_per_launch
-        int success_rate_pct
-        date first_flight
-        string country
-        string company
-        json height
-        json diameter
-        json mass
-        json engines
-        json first_stage
-        json second_stage
-        json payload_weights
-        string description
-    }
-
-    CORES {
-        string id PK
-        string serial
-        int block
-        int reuse_count
-        int rtls_attempts
-        int rtls_landings
-        int asds_attempts
-        int asds_landings
-        string last_update
-        string status
-        array launches
-    }
-
-    PAYLOADS {
-        string id PK
-        string name
-        string type
-        bool reused
-        string launch
-        array customers
-        array nationalities
-        array manufacturers
-        array orbit_params
-        float mass_kg
-        float mass_lbs
-        string regime
-        string orbit
-        float reference_system
-        string dragon
-    }
-
-    CAPSULES {
-        string id PK
-        string serial
-        string status
-        date last_update
-        array launches
-        string type
-        int reuse_count
-        int water_landings
-        int land_landings
-    }
-
-    CREW {
-        string id PK
-        string name
-        string agency
-        string image
-        string wikipedia
-        array launches
-        string status
-    }
-
-    LAUNCHPADS {
-        string id PK
-        string name
-        string full_name
-        string locality
-        string region
-        float latitude
-        float longitude
-        int launch_attempts
-        int launch_successes
-        array rockets
-        string timezone
-        string status
-        string details
-    }
-
-    LANDPADS {
-        string id PK
-        string name
-        string full_name
-        string status
-        string type
-        string locality
-        string region
-        float latitude
-        float longitude
-        int landing_attempts
-        int landing_successes
-        string details
-    }
-
-    DRAGONS {
-        string id PK
-        string name
-        string type
-        bool active
-        int crew_capacity
-        float orbit_duration_yr
-        float dry_mass_kg
-        json heat_shield
-        json thrusters
-        json launch_payload_mass
-        json launch_payload_vol
-        json return_payload_mass
-        json return_payload_vol
-        json pressurized_capsule
-        json trunk
-    }
-
-    SHIPS {
-        string id PK
-        string name
-        string legacy_id
-        string model
-        string type
-        array roles
-        bool active
-        int year_built
-        string home_port
-        float mass_kg
-        float mass_lbs
-        string status
-    }
-
-    STARLINK {
-        string id PK
-        string launch
-        float longitude
-        float latitude
-        float height_km
-        float velocity_kms
-        json spaceTrack
-    }
-
-    LAUNCHES ||--o{ CORES : "uses"
-    LAUNCHES ||--o{ PAYLOADS : "carries"
-    LAUNCHES ||--o{ CREW : "staffed_by"
-    LAUNCHES ||--|| LAUNCHPADS : "launches_from"
-    LAUNCHES ||--|| ROCKETS : "uses"
-    PAYLOADS ||--o| DRAGONS : "carried_by"
-    LAUNCHES ||--o{ SHIPS : "supported_by"
-    LAUNCHES ||--o{ CAPSULES : "uses"
-    LAUNCHES ||--o{ STARLINK : "deploys"
-    LAUNCHES ||--o{ LANDPADS : "lands_on"
-```
-
-### Bridge Tables
-
-#### LaunchCore
-
-- launch_core_id (PK)
-- launch_id (FK)
-- core_id (FK)
-- flight_number
-- landing_success
-- landing_type
-- landing_vehicle
-
-#### LaunchCrew
-
-- launch_crew_id (PK)
-- launch_id (FK)
-- crew_id (FK)
-- role
-
-#### LaunchShip
-
-- launch_ship_id (PK)
-- launch_id (FK)
-- ship_id (FK)
-- role
-
-#### RocketLaunchpad
-
-- rocket_launchpad_id (PK)
-- rocket_id (FK)
-- launchpad_id (FK)
-
-### Cardinality Details
-
-1. Launch to Core: Many-to-Many
-
-   - A launch can use multiple cores (Falcon Heavy uses 3)
-   - A core can be used in multiple launches (reusability)
-
-2. Launch to Payload: One-to-Many
-
-   - A launch can carry multiple payloads
-   - A payload belongs to one launch
-
-3. Launch to Launchpad: Many-to-One
-
-   - A launch uses one launchpad
-   - A launchpad hosts many launches
-
-4. Launch to Rocket: Many-to-One
-
-   - A launch uses one rocket type
-   - A rocket type is used in many launches
-
-5. Launch to Crew: Many-to-Many
-
-   - A launch can have multiple crew members
-   - A crew member can participate in multiple launches
-
-6. Launch to Ship: Many-to-Many
-
-   - A launch can be supported by multiple ships
-   - A ship can support multiple launches
-
-7. Core to Rocket: Many-to-One
-
-   - A core belongs to one rocket type
-   - A rocket type can have many cores
-
-8. Payload to Dragon: Many-to-One
-
-   - A payload can be carried by one Dragon capsule
-   - A Dragon capsule can carry multiple payloads (across missions)
-
-9. Dragon to Rocket: Many-to-One
-
-   - A Dragon capsule is compatible with one rocket type
-   - A rocket type can launch multiple Dragon capsules
-
-10. Ship to Core: Many-to-Many
-
-    - A ship can recover multiple cores
-    - A core can be recovered by multiple ships (different attempts)
-
-11. Crew to Dragon: Many-to-One
-    - Crew members are assigned to one Dragon capsule per mission
-    - A Dragon capsule can have multiple crew members
-
-### Implementation Notes
-
-1. Primary Keys:
-
-   - Use UUID or BIGSERIAL for all ID fields
-   - Maintain natural keys (like serial numbers) as unique constraints
-
-2. Foreign Keys:
-
-   - Implement with ON DELETE RESTRICT
-   - Index all foreign key columns
-
-3. Arrays:
-
-   - Use native array types for simple lists
-   - Consider junction tables for complex relationships
-
-4. Temporal Data:
-
-   - Use timestamp with time zone for all date/time fields
-   - Implement historical tracking where needed
-
-5. Geographical Data:
-
-   - Use appropriate spatial data types for coordinates
-   - Consider PostGIS extension for advanced spatial queries
-
-6. Text Fields:
-
-   - Use VARCHAR(n) for known-length strings
-   - Use TEXT for variable-length content
-
-7. Numeric Data:
-
-   - Use DECIMAL for financial values
-   - Use REAL for scientific measurements
-   - Use INTEGER for counters and simple numbers
-
-8. Status Fields:
-   - Implement as ENUM types where appropriate
-   - Add constraints to ensure valid values
+- Type 2 SCD for dimension tables
+- Incremental load for fact tables

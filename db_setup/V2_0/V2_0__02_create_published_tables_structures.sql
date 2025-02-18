@@ -1,243 +1,345 @@
+USE ROLE SPACEX_DATA_DEV_SYSADMIN;
+
 USE DATABASE SPACEX_DATA_DEV;
 
 USE SCHEMA PBL_SPACEX_DATA;
 
 -- Dimension Tables (Level 1)
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_company (
-        company_key INT IDENTITY (1, 1) PRIMARY KEY,
-        company_id VARCHAR(50),
-        name VARCHAR(100),
-        founder VARCHAR(100),
-        founded INT,
-        employees INT,
-        valuation DECIMAL(15, 2),
-        summary TEXT,
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_COMPANY (
+        COMPANY_SURROGATE_KEY VARCHAR(32),
+        COMPANY_ID VARCHAR(50),
+        COMPANY_NAME VARCHAR(256),
+        COMPANY_FOUNDER VARCHAR(256),
+        COMPANY_FOUNDING_DATE NUMBER (38, 0),
+        COMPANY_EMPLOYEE_COUNT NUMBER (38, 0),
+        COMPANY_VEHICLE_COUNT NUMBER (38, 0),
+        COMPANY_LAUNCH_SITE_COUNT NUMBER (38, 0),
+        COMPANY_TEST_SITE_COUNT NUMBER (38, 0),
+        COMPANY_CEO VARCHAR(256),
+        COMPANY_CTO VARCHAR(256),
+        COMPANY_COO VARCHAR(256),
+        COMPANY_CTO_PROPULSION VARCHAR(256),
+        COMPANY_VALUATION FLOAT,
+        COMPANY_HQ_ADDRESS VARCHAR(500),
+        COMPANY_HQ_CITY VARCHAR(256),
+        COMPANY_HQ_STATE VARCHAR(256),
+        COMPANY_HQ_COUNTRY VARCHAR(256),
+        COMPANY_WEBSITE_URL VARCHAR(500),
+        COMPANY_FLICKR_URL VARCHAR(500),
+        COMPANY_TWITTER_URL VARCHAR(500),
+        COMPANY_ELON_TWITTER_URL VARCHAR(500),
+        COMPANY_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_time (
-        date_key INT PRIMARY KEY,
-        full_date DATE,
-        year INT,
-        quarter INT,
-        month INT,
-        week INT,
-        day INT,
-        day_of_week INT,
-        is_weekend BOOLEAN,
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_TIME (
+        DATE_ID INT IDENTITY (1, 1) PRIMARY KEY,
+        FULL_DATE DATE,
+        YEAR NUMBER (4, 0),
+        QUARTER NUMBER (2, 0),
+        MONTH NUMBER (2, 0),
+        WEEK NUMBER (2, 0),
+        DAY NUMBER (2, 0),
+        DAY_OF_WEEK NUMBER (2, 0),
+        IS_WEEKEND BOOLEAN
     );
 
 -- Dimension Tables (Level 2)
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_rockets (
-        rocket_key INT IDENTITY (1, 1) PRIMARY KEY,
-        rocket_id VARCHAR(50),
-        name VARCHAR(100),
-        type VARCHAR(50),
-        active BOOLEAN,
-        stages INT,
-        boosters INT,
-        cost_per_launch DECIMAL(15, 2),
-        success_rate_pct INT,
-        first_flight DATE,
-        country VARCHAR(100),
-        company_key INT REFERENCES pbl_spacex_data_dim_company (company_key),
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_DRAGON (
+        DRAGON_SURROGATE_KEY VARCHAR(32),
+        DRAGON_ID VARCHAR(50),
+        DRAGON_NAME VARCHAR(256),
+        DRAGON_TYPE VARCHAR(50),
+        DRAGON_CREW_CAPACITY NUMBER (38, 0),
+        DRAGON_ORBIT_DURATION_YR NUMBER (38, 0),
+        DRAGON_DRY_MASS_KG NUMBER (38, 0),
+        DRAGON_FIRST_FLIGHT_AT DATE,
+        DRAGON_HEAT_SHIELD_MATERIAL VARCHAR(16777216),
+        DRAGON_HEAT_SHIELD_SIZE_METERS FLOAT,
+        DRAGON_HEAT_SHIELD_TEMP_DEGREES FLOAT,
+        DRAGON_THRUSTERS_NUMBER VARCHAR(16777216),
+        DRAGON_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_dragons (
-        dragon_key INT IDENTITY (1, 1) PRIMARY KEY,
-        dragon_id VARCHAR(50),
-        name VARCHAR(100),
-        type VARCHAR(50),
-        active BOOLEAN,
-        crew_capacity INT,
-        orbit_duration_yr INT,
-        dry_mass_kg INT,
-        first_flight DATE,
-        company_key INT REFERENCES pbl_spacex_data_dim_company (company_key),
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_ROCKET (
+        ROCKET_SURROGATE_KEY VARCHAR(32),
+        ROCKET_ID VARCHAR(50),
+        ROCKET_NAME VARCHAR(256),
+        ROCKET_TYPE VARCHAR(50),
+        ROCKET_IS_ACTIVE BOOLEAN,
+        ROCKET_DESCRIPTION VARCHAR(500),
+        ROCKET_HEIGHT_METERS FLOAT,
+        ROCKET_DIAMETER_METERS FLOAT,
+        ROCKET_MASS_KG FLOAT,
+        ROCKET_STAGES NUMBER (38, 0),
+        ROCKET_BOOSTERS NUMBER (38, 0),
+        ROCKET_COST_PER_LAUNCH NUMBER (38, 0),
+        ROCKET_SUCCESS_RATE_PCT NUMBER (38, 0),
+        ROCKET_FIRST_FLIGHT DATE,
+        ROCKET_COUNTRY VARCHAR(100),
+        ROCKET_COMPANY VARCHAR(100),
+        ROCKET_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 -- Dimension Tables (Level 3)
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_launchpads (
-        launchpad_key INT IDENTITY (1, 1) PRIMARY KEY,
-        launchpad_id VARCHAR(50),
-        name VARCHAR(256),
-        full_name VARCHAR(512),
-        status VARCHAR(50),
-        locality VARCHAR(256),
-        region VARCHAR(256),
-        latitude FLOAT,
-        longitude FLOAT,
-        launch_attempts INT,
-        launch_successes INT,
-        rockets_launched VARIANT, -- Array of rocket_keys
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_CREW (
+        CREW_SURROGATE_KEY VARCHAR(32),
+        CREW_ID VARCHAR(50),
+        CREW_NAME VARCHAR(256),
+        CREW_AGENCY VARCHAR(256),
+        CREW_IMAGE_URL VARCHAR(500),
+        CREW_WIKIPEDIA_URL VARCHAR(500),
+        CREW_STATUS VARCHAR(50),
+        CREW_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_crew (
-        crew_key INT IDENTITY (1, 1) PRIMARY KEY,
-        crew_id VARCHAR(50),
-        name VARCHAR(256),
-        agency VARCHAR(256),
-        status VARCHAR(50),
-        nationality STRING,
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_LAUNCHPAD (
+        LAUNCHPAD_SURROGATE_KEY VARCHAR(32),
+        LAUNCHPAD_ID VARCHAR(16777216),
+        LAUNCHPAD_NAME VARCHAR(256),
+        LAUNCHPAD_FULL_NAME VARCHAR(512),
+        LAUNCHPAD_LOCALITY VARCHAR(256),
+        LAUNCHPAD_REGION VARCHAR(256),
+        LAUNCHPAD_LATITUDE FLOAT,
+        LAUNCHPAD_LONGITUDE FLOAT,
+        LAUNCHPAD_LAUNCH_ATTEMPTS NUMBER (38, 0),
+        LAUNCHPAD_LAUNCH_SUCCESSES NUMBER (38, 0),
+        LAUNCHPAD_STATUS VARCHAR(50),
+        LAUNCHPAD_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
--- Ships dimension table
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_ships (
-        ship_key INT PRIMARY KEY,
-        ship_id STRING,
-        name STRING,
-        type STRING, -- drone ship, recovery ship, support ship
-        active BOOLEAN,
-        home_port STRING,
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_SHIP (
+        SHIP_SURROGATE_KEY VARCHAR(32),
+        SHIP_ID VARCHAR(50),
+        SHIP_NAME VARCHAR(256),
+        SHIP_TYPE VARCHAR(100),
+        SHIP_ROLES VARCHAR(50),
+        SHIP_IS_ACTIVE BOOLEAN,
+        SHIP_MASS_KG NUMBER (38, 0),
+        SHIP_YEAR_BUILT NUMBER (38, 0),
+        SHIP_HOME_PORT VARCHAR(100),
+        SHIP_STATUS VARCHAR(100),
+        SHIP_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 -- Subdimension Tables
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_capsules (
-        capsule_key INT IDENTITY (1, 1) PRIMARY KEY,
-        capsule_id VARCHAR(50),
-        serial VARCHAR(50),
-        status VARCHAR(50),
-        dragon_key INT REFERENCES pbl_spacex_data_dim_dragons (dragon_key),
-        reuse_count INT,
-        water_landings INT,
-        land_landings INT,
-        last_update TIMESTAMP_NTZ,
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_CAPSULE (
+        CAPSULE_SURROGATE_KEY VARCHAR(32),
+        CAPSULE_ID VARCHAR(50),
+        CAPSULE_LAUNCHES VARIANT,
+        CAPSULE_SERIAL VARCHAR(50),
+        CAPSULE_STATUS VARCHAR(50),
+        CAPSULE_REUSE_COUNT NUMBER (38, 0),
+        CAPSULE_WATER_LANDINGS NUMBER (38, 0),
+        CAPSULE_LAND_LANDINGS NUMBER (38, 0),
+        CAPSULE_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_dim_cores (
-        core_key INT IDENTITY (1, 1) PRIMARY KEY,
-        core_id VARCHAR(50),
-        serial VARCHAR(50),
-        block INT,
-        status VARCHAR(50),
-        reuse_count INT,
-        rtls_attempts INT,
-        rtls_landings INT,
-        asds_attempts INT,
-        asds_landings INT,
-        last_update TIMESTAMP_NTZ,
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_CORE (
+        CORE_SURROGATE_KEY VARCHAR(32),
+        CORE_ID VARCHAR(50),
+        CORE_SERIAL VARCHAR(256),
+        CORE_BLOCK NUMBER (38, 0),
+        CORE_STATUS VARCHAR(50),
+        CORE_REUSE_COUNT NUMBER (38, 0),
+        CORE_RTLS_ATTEMPTS NUMBER (38, 0),
+        CORE_RTLS_LANDINGS NUMBER (38, 0),
+        CORE_ASDS_ATTEMPTS NUMBER (38, 0),
+        CORE_ASDS_LANDINGS NUMBER (38, 0),
+        CORE_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
+    );
+
+CREATE TABLE
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_HISTORY (
+        HISTORY_SURROGATE_KEY VARCHAR(32),
+        HISTORY_ID VARCHAR(50),
+        HISTORY_TITLE VARCHAR(512),
+        HISTORY_EVENT_DATE_UTC TIMESTAMP_NTZ (9),
+        HISTORY_EVENT_DATE_UNIX NUMBER (38, 0),
+        HISTORY_DETAILS VARCHAR(500),
+        HISTORY_LINK_ARTICLE_URL VARCHAR(500),
+        HISTORY_LINK_REDDIT_URL VARCHAR(500),
+        HISTORY_LINK_WIKIPEDIA_URL VARCHAR(500),
+        HISTORY_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
+    );
+
+CREATE TABLE
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_LANDPAD (
+        LANDPAD_SURROGATE_KEY VARCHAR(32),
+        LANDPAD_ID VARCHAR(50),
+        LANDPAD_NAME VARCHAR(256),
+        LANDPAD_FULL_NAME VARCHAR(512),
+        LANDPAD_STATUS VARCHAR(50),
+        LANDPAD_TYPE VARCHAR(50),
+        LANDPAD_LOCALITY VARCHAR(256),
+        LANDPAD_REGION VARCHAR(256),
+        LANDPAD_LATITUDE FLOAT,
+        LANDPAD_LONGITUDE FLOAT,
+        LANDPAD_LANDING_ATTEMPTS NUMBER (38, 0),
+        LANDPAD_LANDING_SUCCESSES NUMBER (38, 0),
+        LANDPAD_WIKIPEDIA VARCHAR(500),
+        LANDPAD_DETAILS VARCHAR(500),
+        LANDPAD_LAUNCHES_ID VARCHAR(500),
+        LANDPAD_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
+    );
+
+CREATE TABLE
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_PAYLOAD (
+        PAYLOAD_SURROGATE_KEY VARCHAR(32),
+        PAYLOAD_ID VARCHAR(50),
+        PAYLOAD_NAME VARCHAR(256),
+        PAYLOAD_TYPE VARCHAR(100),
+        PAYLOAD_REUSED BOOLEAN,
+        PAYLOAD_LAUNCH_ID VARCHAR(500),
+        PAYLOAD_CUSTOMERS VARCHAR(500),
+        PAYLOAD_NATIONALITIES VARCHAR(256),
+        PAYLOAD_MANUFACTURERS VARCHAR(256),
+        PAYLOAD_MASS_KG FLOAT,
+        PAYLOAD_MASS_LBS FLOAT,
+        PAYLOAD_REGIME VARCHAR(50),
+        PAYLOAD_ORBIT VARCHAR(50),
+        PAYLOAD_REFERENCE_SYSTEM VARCHAR(50),
+        PAYLOAD_DRAGON_ID VARCHAR(500),
+        PAYLOAD_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
+    );
+
+CREATE TABLE
+    IF NOT EXISTS PBL_SPACEX_DATA_DIM_STARLINK (
+        STARLINK_SURROGATE_KEY VARCHAR(32),
+        STARLINK_ID VARCHAR(50),
+        STARLINK_LAUNCH_ID VARCHAR(500),
+        STARLINK_LONGITUDE FLOAT,
+        STARLINK_LATITUDE FLOAT,
+        STARLINK_HEIGHT_KM FLOAT,
+        STARLINK_VELOCITY_KMS FLOAT,
+        STARLINK_SPACETRACK_OBJECT_NAME VARCHAR(256),
+        STARLINK_SPACETRACK_LATITUDE FLOAT,
+        STARLINK_SPACETRACK_LONGITUDE FLOAT,
+        STARLINK_SPACETRACK_HEIGHT_KM FLOAT,
+        STARLINK_SPACETRACK_VELOCITY_KMS FLOAT,
+        STARLINK_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_UPDATED_AT TIMESTAMP_NTZ (9),
+        IS_CURRENT BOOLEAN,
+        VALID_FROM TIMESTAMP_NTZ (9),
+        VALID_TO TIMESTAMP_NTZ (9)
     );
 
 -- Fact Tables
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_fact_launches (
-        launch_key INT IDENTITY (1, 1) PRIMARY KEY,
-        launch_id VARCHAR(50),
-        date_key INT REFERENCES pbl_spacex_data_dim_time (date_key),
-        rocket_key INT REFERENCES pbl_spacex_data_dim_rockets (rocket_key),
-        launchpad_key INT REFERENCES pbl_spacex_data_dim_launchpads (launchpad_key),
-        success BOOLEAN,
-        failures VARIANT, -- Array of failure details
-        details TEXT,
-        crew VARIANT, -- Array of crew_keys
-        ships VARIANT, -- Array of ship references
-        capsules VARIANT, -- Array of capsule_keys
-        payloads VARIANT, -- Array of payload references
-        cores VARIANT, -- Array of core information
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_FCT_LAUNCH (
+        LAUNCH_ID VARCHAR(50),
+        LAUNCH_FLIGHT_NUMBER NUMBER (38, 0),
+        LAUNCH_MISSION_NAME VARCHAR(256),
+        LAUNCH_DATE_UTC TIMESTAMP_TZ (9),
+        LAUNCH_DATE_LOCAL TIMESTAMP_TZ (9),
+        LAUNCH_DATE_PRECISION VARCHAR(10),
+        LAUNCH_ROCKET_ID VARCHAR(50),
+        LAUNCH_LAUNCHPAD_ID VARCHAR(50),
+        LAUNCH_IS_SUCCESS BOOLEAN,
+        LAUNCH_MISSION_DETAILS VARCHAR(1024),
+        LAUNCH_IS_UPCOMING BOOLEAN,
+        LAUNCH_STATIC_FIRE_DATE_UTC TIMESTAMP_NTZ (9),
+        LAUNCH_WINDOW NUMBER (38, 0),
+        CORE_COUNT NUMBER (18, 0),
+        REUSED_CORE_COUNT NUMBER (13, 0),
+        SUCCESSFUL_LANDINGS NUMBER (13, 0),
+        CREW_COUNT NUMBER (18, 0),
+        PAYLOAD_COUNT NUMBER (18, 0),
+        TOTAL_PAYLOAD_MASS_KG FLOAT,
+        SHIP_COUNT NUMBER (18, 0),
+        LAUNCH_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_LOADED_AT TIMESTAMP_NTZ (9)
     );
 
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_fact_payloads (
-        payload_key INT IDENTITY (1, 1) PRIMARY KEY,
-        payload_id VARCHAR(50),
-        launch_key INT REFERENCES pbl_spacex_data_fact_launches (launch_key),
-        type VARCHAR(100),
-        name VARCHAR(256),
-        mass_kg FLOAT,
-        orbit VARCHAR(50),
-        reference_system VARCHAR(50),
-        regime VARCHAR(50),
-        customers VARIANT, -- Array of customer names
-        nationalities VARIANT, -- Array of nationality strings
-        manufacturers VARIANT, -- Array of manufacturer names
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
+    IF NOT EXISTS PBL_SPACEX_DATA_FCT_PAYLOAD (
+        PAYLOAD_ID VARCHAR(50),
+        PAYLOAD_LAUNCH_ID VARCHAR(50),
+        PAYLOAD_TYPE VARCHAR(100),
+        PAYLOAD_MASS_KG FLOAT,
+        PAYLOAD_MASS_LBS FLOAT,
+        PAYLOAD_ORBIT VARCHAR(50),
+        PAYLOAD_REFERENCE_SYSTEM VARCHAR(50),
+        PAYLOAD_REGIME VARCHAR(50),
+        PAYLOAD_CUSTOMERS VARCHAR(256),
+        PAYLOAD_NATIONALITIES VARCHAR(256),
+        PAYLOAD_MANUFACTURERS VARCHAR(256),
+        LAUNCH_DATE_UTC TIMESTAMP_TZ (9),
+        LAUNCH_IS_SUCCESS BOOLEAN,
+        LAUNCH_MISSION_DETAILS VARCHAR(500),
+        SUCCESSFUL_PAYLOAD_MASS_KG FLOAT,
+        SUCCESSFUL_DELIVERY NUMBER (1, 0),
+        PAYLOAD_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_LOADED_AT TIMESTAMP_NTZ (9)
     );
 
 CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_fact_starlink (
-        starlink_key INT IDENTITY (1, 1) PRIMARY KEY,
-        starlink_id VARCHAR(50),
-        launch_key INT REFERENCES pbl_spacex_data_fact_launches (launch_key),
-        version VARCHAR(50),
-        height_km FLOAT,
-        latitude FLOAT,
-        longitude FLOAT,
-        velocity_kms FLOAT,
-        spacetrack_data VARIANT, -- JSON object with space-track.org data
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ
-    );
-
--- Bridge Tables
-CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_bridge_launch_crew (
-        launch_key INT,
-        crew_key INT,
-        role STRING, -- Commander, Pilot, Mission Specialist
-        seat_number INT, -- Position in Dragon capsule
-        mission_status STRING, -- Assigned, In-Flight, Completed
-        launch_order INT, -- For crew members with multiple flights
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ,
-        PRIMARY KEY (launch_key, crew_key),
-        FOREIGN KEY (launch_key) REFERENCES pbl_spacex_data_fact_launches (launch_key),
-        FOREIGN KEY (crew_key) REFERENCES pbl_spacex_data_dim_crew (crew_key)
-    );
-
--- Bridge table for Launch-Ship relationship
-CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_bridge_launch_ships (
-        launch_key INT,
-        ship_key INT,
-        role STRING, -- booster recovery, fairing recovery, support
-        status STRING, -- success, failure, canceled
-        created_at TIMESTAMP_NTZ,
-        updated_at TIMESTAMP_NTZ,
-        PRIMARY KEY (launch_key, ship_key, role),
-        FOREIGN KEY (launch_key) REFERENCES pbl_spacex_data_fact_launches (launch_key),
-        FOREIGN KEY (ship_key) REFERENCES pbl_spacex_data_dim_ships (ship_key)
-    );
-
-CREATE TABLE
-    IF NOT EXISTS pbl_spacex_data_bridge_launch_dragons (
-        launch_key INT,
-        dragon_key INT,
-        capsule_key INT,
-        mission_type VARCHAR(50), -- CRS, CREW, COMMERCIAL
-        cargo_mass_kg DECIMAL(10, 2), -- For cargo missions
-        crew_count INT, -- For crew missions
-        docking_date TIMESTAMP_NTZ,
-        undocking_date TIMESTAMP_NTZ,
-        mission_duration_hours INT,
-        mission_status VARCHAR(50),
-        PRIMARY KEY (launch_key, dragon_key)
+    IF NOT EXISTS PBL_SPACEX_DATA_FCT_STARLINK (
+        STARLINK_ID VARCHAR(50),
+        STARLINK_LAUNCH_ID VARCHAR(50),
+        STARLINK_SATELLITE_VERSION VARCHAR(50),
+        STARLINK_HEIGHT_KM FLOAT,
+        STARLINK_LATITUDE FLOAT,
+        STARLINK_LONGITUDE FLOAT,
+        STARLINK_VELOCITY_KMS FLOAT,
+        STARLINK_SPACETRACK VARIANT,
+        LAUNCH_DATE_UTC TIMESTAMP_TZ (9),
+        LAUNCH_IS_SUCCESS BOOLEAN,
+        LAUNCH_MISSION_DETAILS VARCHAR(500),
+        ORBITAL_STATUS VARCHAR(17),
+        VELOCITY_STATUS VARCHAR(13),
+        STARLINK_CREATED_AT TIMESTAMP_NTZ (9),
+        DBT_LOADED_AT TIMESTAMP_NTZ (9)
     );

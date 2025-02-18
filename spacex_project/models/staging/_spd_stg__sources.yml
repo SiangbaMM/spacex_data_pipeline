@@ -2,10 +2,9 @@ version: 2
 
 sources:
   - name: stg_spacex_data
-    database: SPACEX_DATA_DEV
     schema: STG_SPACEX_DATA
     tables:
-      - name: stg_spacex_data_capsules
+      - name: stg_spacex_data_capsule
         description: Dragon capsule data and reuse information
         loaded_at_field: _sdc_extracted_at
 
@@ -13,7 +12,7 @@ sources:
         description: SpaceX company information
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_cores
+      - name: stg_spacex_data_core
         description: Core data including reuse information
         loaded_at_field: _sdc_extracted_at
 
@@ -21,7 +20,7 @@ sources:
         description: Crew member information
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_dragons
+      - name: stg_spacex_data_dragon
         description: Dragon spacecraft configurations
         loaded_at_field: _sdc_extracted_at
 
@@ -29,19 +28,19 @@ sources:
         description: Historical events of SpaceX
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_landpads
+      - name: stg_spacex_data_landpad
         description: Landing pad information
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_launches
+      - name: stg_spacex_data_launch
         description: Raw launch data from SpaceX API
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_launchpads
+      - name: stg_spacex_data_launchpad
         description: Detailed launch site information
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_payloads
+      - name: stg_spacex_data_payload
         description: Payload information for each launch
         loaded_at_field: _sdc_extracted_at
 
@@ -49,11 +48,11 @@ sources:
         description: Elon Musk's Tesla Roadster information
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_rockets
+      - name: stg_spacex_data_rocket
         description: Rocket configurations and specifications
         loaded_at_field: _sdc_extracted_at
 
-      - name: stg_spacex_data_ships
+      - name: stg_spacex_data_ship
         description: Recovery ship information
         loaded_at_field: _sdc_extracted_at
 

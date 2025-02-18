@@ -1,15 +1,14 @@
 version: 2
 
 models:
-  - name: stg_spacex_data__capsules
+  - name: stg_spacex_data__capsule
     columns:
       - name: capsule_id
         description: This is a unique identifier of a Space X capsule
         tests:
           - unique
           - not_null
-
-      - name: status
+      - name: capsule_status
         description: The status of a launches' capsule
         tests:
           - accepted_values:
@@ -17,16 +16,14 @@ models:
               config:
                 severity: warn
 
-  
-  - name: stg_spacex_data__cores
+  - name: stg_spacex_data__core
     columns:
       - name: core_id
         description: This is a unique identifier of a Space X cores
         tests:
           - unique
           - not_null
-
-      - name: status
+      - name: core_status
         description: The status of a launches' core
         tests:
           - accepted_values:
@@ -34,10 +31,14 @@ models:
               config:
                 severity: warn
 
-  
   - name: stg_spacex_data__crew
     columns:
-      - name: status
+      - name: crew_id
+        description: This is a unique identifier of a Space X crew
+        tests:
+          - unique
+          - not_null
+      - name: crew_status
         description: The status of a launches' core
         tests:
           - accepted_values:
@@ -45,9 +46,18 @@ models:
               config:
                 severity: warn
 
-  - name: stg_spacex_data__launches
+  - name: stg_spacex_data__launch
     columns:
-      - name: date_precision
+      - name: launch_id
+        description: This is a unique identifier of a Space X launch
+        tests:
+          - unique
+          - not_null
+      - name: launch_date_utc
+        tests:
+          - not_null
+          - launch_date_not_future
+      - name: launch_date_precision
         description: The status of a launches
         tests:
           - accepted_values:
@@ -55,9 +65,14 @@ models:
               config:
                 severity: warn
 
-  - name: stg_spacex_data__launchpads
+  - name: stg_spacex_data__launchpad
     columns:
-      - name: status
+      - name: launchpad_id
+        description: This is a unique identifier of a Space X launchpads
+        tests:
+          - unique
+          - not_null
+      - name: launchpad_status
         description: The status of a launches' core
         tests:
           - accepted_values:
@@ -65,6 +80,8 @@ models:
               config:
                 severity: warn
 
-
-
-      
+  - name: stg_spacex_data__payload
+    columns:
+      - name: payload_mass_kg
+        tests:
+          - payload_mass_within_bounds
