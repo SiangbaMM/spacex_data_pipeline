@@ -37,7 +37,7 @@ models:
         tests:
           - unique
           - not_null
-      - name: launch_id
+      - name: payload_launch_id
         description: Foreign key to the launch
         tests:
           - not_null
@@ -55,16 +55,16 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 100000
-      - name: orbit
+      - name: payload_orbit
         description: Target orbit for the payload
         tests:
           - not_null
-      - name: successful_payload_mass_kg
+      - name: payload_successful_mass_kg
         description: Mass of successfully delivered payload
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-      - name: successful_delivery
+      - name: payload_successful_delivery
         description: Flag indicating successful payload delivery
         tests:
           - not_null
@@ -77,32 +77,32 @@ models:
         tests:
           - unique
           - not_null
-      - name: launch_id
+      - name: starlink_launch_id
         description: Foreign key to the launch
         tests:
           - not_null
           - relationships:
               to: ref('stg_spacex_data__launch')
               field: launch_id
-      - name: version
+      - name: starlink_satellite_version
         description: Starlink satellite version
         tests:
           - not_null
-      - name: height_km
+      - name: starlink_height_km
         description: Orbital height in kilometers
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 1000
-      - name: velocity_kms
+      - name: starlink_velocity_kms
         description: Orbital velocity in kilometers per second
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 7.0
               max_value: 8.0
-      - name: orbital_status
+      - name: starlink_orbital_status
         description: Status based on orbital height
         tests:
           - not_null

@@ -55,7 +55,7 @@ final as (
             when s.starlink_height_km < 540 then 'Below Operational'
             when s.starlink_height_km > 560 then 'Above Operational'
             else 'Unknown'
-        end as orbital_status,
+        end as starlink_orbital_status,
 
         case
             when s.starlink_velocity_kms between 7.5 and 7.8 then 'Nominal'

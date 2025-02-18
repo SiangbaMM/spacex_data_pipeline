@@ -27,14 +27,11 @@ jobs:
       - name: Run pre-commit
         run: pre-commit run --all-files
 
-      - name: Install Singer tap dependencies
+      - name: Install dbt dependencies
         run: |
-          pip install pytest
-          pip install -r requirements_singer.txt
-          pip install -e ./singer_tap/
+          pip install -r requirements_dbt.txt
 
-          # Add any specific singer tap dependencies here
-
-      - name: Run Singer tap tests
+      - name: Run dbt unit tests
         run: |
-          pytest tests/
+          cd spacex_project
+          dbt test -s unit --project-dir spacex_project/ --profiles-dir spacex_project/

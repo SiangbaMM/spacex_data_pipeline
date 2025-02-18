@@ -59,12 +59,12 @@ final as (
         case
             when l.launch_is_success then p.payload_mass_kg
             else 0
-        end as successful_payload_mass_kg,
+        end as payload_successful_mass_kg,
 
         case
             when l.launch_is_success then 1
             else 0
-        end as successful_delivery,
+        end as payload_successful_delivery,
 
         -- Metadata
         p.payload_created_at,
