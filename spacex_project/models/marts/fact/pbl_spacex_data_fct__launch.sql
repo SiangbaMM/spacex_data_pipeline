@@ -70,7 +70,7 @@ final as (
         launch.launch_created_at as launch_created_at,
         current_timestamp() as dbt_loaded_at
 
-    from launches
+    from launch
     left join launch_cores
         on launch.launch_id = launch_cores.bridge_launch_core_launch_id
     left join launch_crew
