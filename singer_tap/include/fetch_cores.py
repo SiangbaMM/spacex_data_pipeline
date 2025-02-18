@@ -21,7 +21,7 @@ class CoresTap(SpaceXTapBase):
 
     def fetch_cores(self) -> None:
         """Fetch and process core spacex data."""
-        stream_name = "STG_SPACEX_DATA_CORES"
+        stream_name = "STG_SPACEX_DATA_CORE"
 
         try:
             # Fetch data from the cores endpoint
@@ -117,7 +117,7 @@ class CoresTap(SpaceXTapBase):
                     continue  # Continue processing other cores
 
             # Write state
-            state = {"STG_SPACEX_DATA_CORES": {"last_sync": current_time.isoformat()}}
+            state = {"STG_SPACEX_DATA_CORE": {"last_sync": current_time.isoformat()}}
             singer.write_state(state)
 
         except requests.exceptions.RequestException as api_error:

@@ -30,15 +30,7 @@ with starlink as
 	    nullif(raan, -999999999) as starlink_raan,
 	    nullif(semi_major_axis_km, -999999999) as starlink_semi_major_axis_km,
         created_at as starlink_created_at,
-	    updated_at as starlink_updated_at,
-	    raw_data as starlink_raw_data,
-	    _sdc_extracted_at as starlink_sdc_extracted_at,
-        _sdc_received_at as starlink_sdc_received_at,
-        _sdc_batched_at as starlink_sdc_batched_at,
-        _sdc_deleted_at as starlink_sdc_deleted_at,
-        _sdc_sequence as starlink_sdc_sequence,
-        _sdc_table_version as starlink_sdc_table_version,
-        _sdc_sync_started_at as starlink_sdc_sync_started_at
+	    raw_data as starlink_raw_data
 
     from {{ source('stg_spacex_data', 'stg_spacex_data_starlink') }}
 )

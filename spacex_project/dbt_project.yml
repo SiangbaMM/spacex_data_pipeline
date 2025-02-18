@@ -41,12 +41,21 @@ models:
       +schema: stg_spacex_data
 
     intermediate:
-      +materialized: incremental
       +schema: cmp_spacex_data
+      +materialized: incremental
+      +incremental_strategy: merge
+      +on_schema_change: sync_all_columns
 
     marts:
-      +materialized: table
       +schema: pbl_spacex_data
+
+      dimension:
+        +materialized: table
+
+      fact:
+        +materialized: incremental
+        +incremental_strategy: delete+insert
+
 
   elementary:
     +schema: tec_spacex_data  # votre schéma cible

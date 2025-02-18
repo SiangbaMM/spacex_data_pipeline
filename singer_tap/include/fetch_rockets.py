@@ -22,7 +22,7 @@ class RocketsTap(SpaceXTapBase):
     def fetch_rockets(self) -> None:
         """Fetch and process rockets data from SpaceX API with \
             Snowflake-compatible schema."""
-        stream_name = "STG_SPACEX_DATA_ROCKETS"
+        stream_name = "STG_SPACEX_DATA_ROCKET"
 
         try:
             # Fetch data from the rockets endpoint
@@ -178,7 +178,7 @@ class RocketsTap(SpaceXTapBase):
                     continue  # Continue processing other rocket
 
             # Write state
-            state = {"STG_SPACEX_DATA_ROCKETS": {"last_sync": current_time_str}}
+            state = {"STG_SPACEX_DATA_ROCKET": {"last_sync": current_time_str}}
             singer.write_state(state)
 
         except requests.exceptions.RequestException as api_error:

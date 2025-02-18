@@ -66,3 +66,25 @@ where CAST(m.{{ column_name }} AS INTEGER) < 0
    or CAST(m.{{ column_name }} AS INTEGER) > 15  -- As of now, no core has been reused more than 15 times
 
 {% endtest %}
+
+{% test valid_temporal_range(model, column_name) %}
+with validation as (
+    select
+        *,
+        lag(valid_to) over (partition by {{ column_name }} order by valid_from) as prev_valid_to
+    from {{ model }}
+)
+select *
+from validation
+where valid_from >= valid_to
+   or (prev_valid_to is not null and valid_from != prev_valid_to)
+{% endtest %}
+
+
+-- Test to ensure cost per kg is reasonable
+{% test reasonable_cost_per_kg(model, column_name) %}
+select
+    m.*
+from {{ model }} m
+where CAST(m.{{ column_name }} AS DECIMAL(38,2)) < 100.00
+{% endtest %}

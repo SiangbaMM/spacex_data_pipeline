@@ -23,15 +23,7 @@ with company as
 	    links as company_links,
 	    summary as company_summary,
 	    created_at as company_created_at,
-	    updated_at as company_updated_at,
-	    raw_data as company_raw_data,
-	    _sdc_extracted_at as company_sdc_extracted_at,
-        _sdc_received_at as company_sdc_received_at,
-        _sdc_batched_at as company_sdc_batched_at,
-        _sdc_deleted_at as company_sdc_deleted_at,
-        _sdc_sequence as company_sdc_sequence,
-        _sdc_table_version as company_sdc_table_version,
-        _sdc_sync_started_at as company_sdc_sync_started_at
+	    raw_data as company_raw_data
 
     from {{ source('stg_spacex_data', 'stg_spacex_data_company') }}
 )

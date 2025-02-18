@@ -22,7 +22,7 @@ class PayloadsTap(SpaceXTapBase):
     def fetch_payloads(self) -> None:
         """Fetch and process payloads data from SpaceX API with \
             Snowflake-compatible schema."""
-        stream_name = "STG_SPACEX_DATA_PAYLOADS"
+        stream_name = "STG_SPACEX_DATA_PAYLOAD"
 
         try:
             # Fetch data from the payloads endpoint
@@ -187,7 +187,7 @@ class PayloadsTap(SpaceXTapBase):
                     continue  # Continue processing other payload
 
             # Write state
-            state = {"STG_SPACEX_DATA_PAYLOADS": {"last_sync": current_time_str}}
+            state = {"STG_SPACEX_DATA_PAYLOAD": {"last_sync": current_time_str}}
             singer.write_state(state)
 
         except requests.exceptions.RequestException as api_error:

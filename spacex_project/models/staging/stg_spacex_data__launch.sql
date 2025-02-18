@@ -1,0 +1,42 @@
+
+{{ config(
+    alias = 'vw_stg_spacex_data_launch'
+    )
+}}
+
+with launches as
+(
+    select
+	    launch_id as launch_id,
+	    flight_number as launch_flight_number,
+	    name as launch_mission_name,
+	    convert_timezone('UTC', date_utc) as launch_date_utc,
+	    nullif(date_unix, -999999999) as launch_date_unix,
+	    convert_timezone('UTC', date_local) as launch_date_local,
+	    date_precision as launch_date_precision,
+	    static_fire_date_utc as launch_static_fire_date_utc,
+	    nullif(static_fire_date_unix, -999999999) as launch_static_fire_date_unix,
+	    net as launch_net,
+	    nullif(window, -999999999) as launch_window,
+	    rocket as launch_rocket_id,
+	    success as launch_is_success,
+	    failures as launch_failures,
+	    upcoming as launch_is_upcoming,
+	    details as launch_mission_details,
+	    fairings as launch_fairings,
+	    try_parse_json(crew) as launch_crew_id,
+	    ships as launch_ships,
+	    capsules as launch_capsules,
+	    payloads as launch_payload_id,
+	    try_parse_json(launchpad) as launch_launchpad_id,
+		try_parse_json(cores) as launch_core_serial_numbers,
+		try_parse_json(links) as launch_links,
+	    auto_update as launch_auto_update,
+	    launch_library_id as launch_library_id,
+        created_at as launch_created_at,
+	    raw_data as launch_raw_data,
+
+    from {{ source('stg_spacex_data', 'stg_spacex_data_launch') }}
+)
+
+select * from launches

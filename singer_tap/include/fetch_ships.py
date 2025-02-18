@@ -22,7 +22,7 @@ class ShipsTap(SpaceXTapBase):
     def fetch_ships(self) -> None:
         """Fetch and process ships data from SpaceX API with \
             Snowflake-compatible schema."""
-        stream_name = "STG_SPACEX_DATA_SHIPS"
+        stream_name = "STG_SPACEX_DATA_SHIP"
 
         try:
             # Fetch data from the ships endpoint
@@ -113,7 +113,7 @@ class ShipsTap(SpaceXTapBase):
             # Skip processing if no ships data
             if not ships_data:
                 # Write state even for empty response
-                state = {"STG_SPACEX_DATA_SHIPS": {"last_sync": current_time_str}}
+                state = {"STG_SPACEX_DATA_SHIP": {"last_sync": current_time_str}}
                 singer.write_state(state)
                 return
 
@@ -185,7 +185,7 @@ class ShipsTap(SpaceXTapBase):
                     continue  # Continue processing other ship
 
             # Write state
-            state = {"STG_SPACEX_DATA_SHIPS": {"last_sync": current_time_str}}
+            state = {"STG_SPACEX_DATA_SHIP": {"last_sync": current_time_str}}
             singer.write_state(state)
 
         except requests.exceptions.RequestException as api_error:

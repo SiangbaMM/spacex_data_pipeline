@@ -1,292 +1,273 @@
-# SpaceX Data Model - Column Level Lineage
+# SpaceX Data Column Lineage and Quality Rules
 
-## Core Launch Data Flow
+## Column Lineage
 
-```mermaid
-flowchart TD
-    %% Source Tables
-    SRC_LAUNCHES[source_api.launches]
-    SRC_ROCKETS[source_api.rockets]
-    SRC_CORES[source_api.cores]
+### Launch Cost Fact Table
 
-    %% Staging Tables
-    STG_LAUNCHES[stg_spacex_data__launches]
-    STG_ROCKETS[stg_spacex_data__rockets]
-    STG_CORES[stg_spacex_data__cores]
+#### pbl_spacex_data_fct\_\_launch_costs
 
-    %% Intermediate Tables
-    INT_LAUNCH_CORES[cmp_bridge__launch_cores]
+| Target Column         | Source                                        | Transformation Logic                    | Data Quality Rules        |
+| --------------------- | --------------------------------------------- | --------------------------------------- | ------------------------- |
+| launch_id             | stg_spacex_data\_\_launches.launch_id         | Direct copy                             | Not null, Unique          |
+| launch_date_utc       | stg_spacex_data\_\_launches.launch_date_utc   | Direct copy                             | Not null, Not future date |
+| rocket_id             | stg_spacex_data\_\_launches.rocket_id         | Direct copy                             | Not null, FK to rockets   |
+| success               | stg_spacex_data\_\_launches.success           | Direct copy                             | Not null                  |
+| total_payload_mass_kg | cmp_bridge\_\_launch_payloads.payload_mass_kg | SUM(payload_mass_kg)                    | > 0                       |
+| launch_cost_usd       | stg_spacex_data\_\_launches.launch_cost_usd   | Direct copy                             | > 0                       |
+| cost_per_kg           | Calculated                                    | launch_cost_usd / total_payload_mass_kg | > 100                     |
+| payload_count         | cmp_bridge\_\_launch_payloads                 | COUNT(DISTINCT payload_id)              | >= 0                      |
+| crew_count            | cmp_bridge\_\_launch_crew                     | COUNT(DISTINCT crew_member_id)          | >= 0                      |
 
-    %% Final Tables
-    FCT_LAUNCHES[pbl_spacex_data_fct__launches]
-    DIM_ROCKETS[pbl_spacex_data_dim__rockets]
-    DIM_CORES[pbl_spacex_data_dim__cores]
+### Bridge Tables
 
-    %% Launch ID Lineage
-    SRC_LAUNCHES.launch_id --> STG_LAUNCHES.launch_id
-    STG_LAUNCHES.launch_id --> FCT_LAUNCHES.launch_id
+#### cmp_bridge\_\_launch_cores
 
-    %% Rocket Data Lineage
-    SRC_ROCKETS.id --> STG_ROCKETS.rocket_id
-    SRC_ROCKETS.name --> STG_ROCKETS.rocket_name
-    STG_ROCKETS.rocket_id --> DIM_ROCKETS.rocket_id
-    STG_ROCKETS.rocket_name --> DIM_ROCKETS.rocket_name
+| Target Column                | Source                                            | Transformation Logic | Data Quality Rules       |
+| ---------------------------- | ------------------------------------------------- | -------------------- | ------------------------ |
+| bridge_launch_core_id        | Generated                                         | UUID                 | Not null, Unique         |
+| bridge_launch_core_launch_id | stg_spacex_data\_\_launches.launch_id             | From array flatten   | Not null, FK to launches |
+| bridge_launch_core_serial    | stg_spacex_data\_\_launches.core_serial_numbers   | From array flatten   | Not null                 |
+| landing_success              | stg_spacex_data\_\_launches.cores_landing_success | From array flatten   | Boolean                  |
 
-    %% Core Data Lineage
-    SRC_CORES.serial --> STG_CORES.core_serial
-    STG_CORES.core_serial --> INT_LAUNCH_CORES.core_serial
-    INT_LAUNCH_CORES.core_serial --> DIM_CORES.serial
-```
+#### cmp_bridge\_\_launch_payloads
 
-## Payload and Dragon Data Flow
+| Target Column                   | Source                                  | Transformation Logic | Data Quality Rules       |
+| ------------------------------- | --------------------------------------- | -------------------- | ------------------------ |
+| bridge_launch_payload_id        | Generated                               | UUID                 | Not null, Unique         |
+| bridge_launch_payload_launch_id | stg_spacex_data\_\_launches.launch_id   | From array flatten   | Not null, FK to launches |
+| bridge_launch_payload_id        | stg_spacex_data\_\_launches.payload_ids | From array flatten   | Not null                 |
+| payload_mass_kg                 | stg_spacex_data\_\_payloads.mass_kg     | Direct copy          | Between 0-100000         |
 
-```mermaid
-flowchart TD
-    %% Source Tables
-    SRC_PAYLOADS[source_api.payloads]
-    SRC_DRAGONS[source_api.dragons]
+### Dimension Tables (SCD Type 2)
 
-    %% Staging Tables
-    STG_PAYLOADS[stg_spacex_data__payloads]
-    STG_DRAGONS[stg_spacex_data__dragons]
+Common columns for all SCD Type 2 dimension tables:
 
-    %% Intermediate Tables
-    INT_LAUNCH_PAYLOADS[cmp_bridge__launch_payloads]
+| Target Column  | Source    | Transformation Logic                | Data Quality Rules                 |
+| -------------- | --------- | ----------------------------------- | ---------------------------------- |
+| surrogate_key  | Generated | dbt_utils.generate_surrogate_key()  | Not null, Unique                   |
+| natural_key    | Source ID | Direct copy                         | Not null                           |
+| valid_from     | Generated | current_timestamp()                 | Not null, <= current_timestamp     |
+| valid_to       | Generated | '9999-12-31' or current_timestamp() | > valid_from                       |
+| is_current     | Generated | True/False based on validity        | Not null, One true per natural_key |
+| dbt_updated_at | Generated | current_timestamp()                 | Not null                           |
 
-    %% Final Tables
-    FCT_LAUNCH_PAYLOADS[pbl_spacex_data_fct__launch_payloads]
-    DIM_PAYLOADS[pbl_spacex_data_dim__payloads]
-    DIM_DRAGONS[pbl_spacex_data_dim__dragons]
+#### pbl_spacex_data_dim\_\_capsules
 
-    %% Payload Data Lineage
-    SRC_PAYLOADS.id --> STG_PAYLOADS.payload_id
-    SRC_PAYLOADS.mass_kg --> STG_PAYLOADS.payload_mass_kg
-    STG_PAYLOADS.payload_id --> INT_LAUNCH_PAYLOADS.payload_id
-    INT_LAUNCH_PAYLOADS.payload_mass_kg --> FCT_LAUNCH_PAYLOADS.payload_mass_kg
+| Target Column          | Source                             | Transformation Logic | Data Quality Rules |
+| ---------------------- | ---------------------------------- | -------------------- | ------------------ |
+| capsule_id             | stg_spacex_data\_\_capsules.id     | Direct copy          | Not null           |
+| capsule_serial         | stg_spacex_data\_\_capsules.serial | Direct copy          | Not null           |
+| capsule_status         | stg_spacex_data\_\_capsules.status | Direct copy          | In valid list      |
+| capsule_reuse_count    | stg_spacex_data\_\_capsules.reuse  | Direct copy          | >= 0               |
+| capsule_water_landings | stg_spacex_data\_\_capsules.water  | Direct copy          | >= 0               |
+| capsule_land_landings  | stg_spacex_data\_\_capsules.land   | Direct copy          | >= 0               |
 
-    %% Dragon Data Lineage
-    SRC_DRAGONS.id --> STG_DRAGONS.dragon_id
-    SRC_DRAGONS.name --> STG_DRAGONS.dragon_name
-    STG_DRAGONS.dragon_id --> DIM_DRAGONS.dragon_id
-    STG_DRAGONS.dragon_name --> DIM_DRAGONS.name
-```
+#### pbl_spacex_data_dim\_\_cores
 
-## Crew and Ship Data Flow
+| Target Column      | Source                             | Transformation Logic | Data Quality Rules |
+| ------------------ | ---------------------------------- | -------------------- | ------------------ |
+| core_id            | stg_spacex_data\_\_cores.id        | Direct copy          | Not null           |
+| core_serial        | stg_spacex_data\_\_cores.serial    | Direct copy          | Not null           |
+| core_block         | stg_spacex_data\_\_cores.block     | Direct copy          | Not null           |
+| core_status        | stg_spacex_data\_\_cores.status    | Direct copy          | In valid list      |
+| core_reuse_count   | stg_spacex_data\_\_cores.reuse     | Direct copy          | >= 0               |
+| core_rtls_attempts | stg_spacex_data\_\_cores.rtls      | Direct copy          | >= 0               |
+| core_rtls_landings | stg_spacex_data\_\_cores.rtls_land | Direct copy          | >= rtls_attempts   |
+| core_asds_attempts | stg_spacex_data\_\_cores.asds      | Direct copy          | >= 0               |
+| core_asds_landings | stg_spacex_data\_\_cores.asds_land | Direct copy          | >= asds_attempts   |
 
-```mermaid
-flowchart TD
-    %% Source Tables
-    SRC_CREW[source_api.crew]
-    SRC_SHIPS[source_api.ships]
+[Additional dimension tables omitted for brevity - the pattern continues for all 13 dimension tables]
 
-    %% Staging Tables
-    STG_CREW[stg_spacex_data__crew]
-    STG_SHIPS[stg_spacex_data__ships]
+## Data Quality Tests
 
-    %% Intermediate Tables
-    INT_LAUNCH_CREW[cmp_bridge__launch_crew]
-    INT_LAUNCH_SHIPS[cmp_bridge__launch_ships]
-
-    %% Final Tables
-    FCT_LAUNCH_CREW[pbl_spacex_data_fct__launch_crew]
-    FCT_LAUNCH_SHIPS[pbl_spacex_data_fct__launch_ships]
-    DIM_CREW[pbl_spacex_data_dim__crew]
-    DIM_SHIPS[pbl_spacex_data_dim__ships]
-
-    %% Crew Data Lineage
-    SRC_CREW.id --> STG_CREW.crew_id
-    SRC_CREW.name --> STG_CREW.crew_name
-    STG_CREW.crew_id --> INT_LAUNCH_CREW.crew_id
-    INT_LAUNCH_CREW.crew_id --> FCT_LAUNCH_CREW.crew_id
-
-    %% Ship Data Lineage
-    SRC_SHIPS.id --> STG_SHIPS.ship_id
-    SRC_SHIPS.name --> STG_SHIPS.ship_name
-    STG_SHIPS.ship_id --> INT_LAUNCH_SHIPS.ship_id
-    INT_LAUNCH_SHIPS.ship_id --> FCT_LAUNCH_SHIPS.ship_id
-```
-
-## Detailed Column Transformations
-
-### FCT_LAUNCHES Table
+### Generic Tests
 
 ```yaml
-columns:
-  launch_id:
-    source: source.launches.id
-    transformation: direct copy
+version: 2
 
-  flight_number:
-    source: source.launches.flight_number
-    transformation: direct copy
+# Common tests for all SCD Type 2 dimension tables
+models:
+  - name: pbl_spacex_data_dim__capsules
+    columns: &scd_type_2_tests
+      - name: surrogate_key
+        tests:
+          - unique
+          - not_null
+      - name: natural_key
+        tests:
+          - not_null
+      - name: valid_from
+        tests:
+          - not_null
+          - valid_temporal_range
+      - name: valid_to
+        tests:
+          - not_null
+          - valid_temporal_range
+      - name: is_current
+        tests:
+          - not_null
+          - one_current_per_key
 
-  mission_name:
-    source: source.launches.name
-    transformation: direct copy
+  - name: pbl_spacex_data_dim__cores
+    columns: *scd_type_2_tests
 
-  launch_date_utc:
-    source: source.launches.date_utc
-    transformation: |
-      convert_timezone('UTC', date_utc)
+  - name: pbl_spacex_data_dim__crew
+    columns: *scd_type_2_tests
 
-  success:
-    source: source.launches.success
-    transformation: direct copy
+  # Additional dimension tables follow same pattern
 
-  core_count:
-    source: int_launch_cores
-    transformation: |
-      COUNT(DISTINCT core_serial)
-      GROUP BY launch_id
-
-  total_payload_mass_kg:
-    source: int_launch_payloads
-    transformation: |
-      SUM(payload_mass_kg)
-      GROUP BY launch_id
+  - name: pbl_spacex_data_fct__launch_costs
+    columns:
+      - name: launch_id
+        tests:
+          - unique
+          - not_null
+          - relationships:
+              to: ref('stg_spacex_data__launches')
+              field: launch_id
+      - name: cost_per_kg
+        tests:
+          - reasonable_cost_per_kg
 ```
 
-### FCT_LAUNCH_COSTS Table
+### Custom Tests
 
-```yaml
-columns:
-  launch_id:
-    source: fct_launches.launch_id
-    transformation: direct copy
+```sql
+-- Test to ensure valid temporal range
+-- Test to ensure launch dates are not in the future
+{% test launch_date_not_future(model, column_name) %}
 
-  base_launch_cost:
-    source: dim_rockets.cost_per_launch
-    transformation: direct copy
+select *
+from {{ model }}
+where {{ column_name }} > CURRENT_TIMESTAMP()
 
-  estimated_launch_cost:
-    sources:
-      - dim_rockets.cost_per_launch
-      - fct_launches.reused_core_count
-      - fct_launches.core_count
-    transformation: |
-      cost_per_launch * (1 - (0.3 * reused_core_count/core_count))
+{% endtest %}
 
-  cost_per_kg:
-    sources:
-      - estimated_launch_cost
-      - total_payload_mass_kg
-    transformation: |
-      CASE
-          WHEN total_payload_mass_kg > 0
-          THEN estimated_launch_cost / total_payload_mass_kg
-          ELSE NULL
-      END
+-- Test to ensure payload mass is within reasonable bounds (0-100,000 kg)
+{% test payload_mass_within_bounds(model, column_name) %}
+
+select
+    m.*
+from {{ model }} m
+where CAST(m.{{ column_name }} AS DECIMAL(38,2)) < 0.00
+   or CAST(m.{{ column_name }} AS DECIMAL(38,2)) > 100000.00
+
+{% endtest %}
+
+-- Test to ensure success rate is between 0 and 100
+{% test success_rate_valid_range(model, column_name) %}
+with success_count as (
+    select
+        sum(
+            case {{ column_name }}
+                when TRUE then 1
+                else 0
+            end
+        ) as success_count
+    from {{ model }}
+    where {{ column_name }} = TRUE
+    group by {{ column_name }}
+),
+success_rate as (
+    select
+        count(model.{{ column_name }}) as row_count,
+        success.success_count as success_count,
+        (success_count/row_count)*100 as success_rate
+    from {{ model }} as model
+        inner join success_count as success
+    group by success.success_count
+)
+select *
+from success_rate
+where success_rate.success_rate < 50.00
+
+{% endtest %}
+
+-- Test to ensure cost per kg is reasonable (> $100 per kg for space launches)
+{% test reasonable_payload_mass_kg(model, column_name) %}
+
+select *
+from {{ model }}
+where CAST({{ column_name }} AS DECIMAL(38,2)) > 50000.00
+
+{% endtest %}
+
+-- Test to ensure core reuse count is valid
+{% test valid_core_reuse_count(model, column_name) %}
+
+select
+    m.*
+from {{ model }} m
+where CAST(m.{{ column_name }} AS INTEGER) < 0
+   or CAST(m.{{ column_name }} AS INTEGER) > 15  -- As of now, no core has been reused more than 15 times
+
+{% endtest %}
+
+{% test valid_temporal_range(model, column_name, surrogate_key) %}
+with validation as (
+    select
+        *,
+        lag(valid_to) over (partition by surrogate_key order by valid_from) as prev_valid_to
+    from {{ model }}
+)
+select *
+from validation
+where valid_from >= valid_to
+   or (prev_valid_to is not null and valid_from != prev_valid_to)
+{% endtest %}
+
+-- Test to ensure cost per kg is reasonable
+{% test reasonable_cost_per_kg(model, column_name) %}
+select
+    m.*
+from {{ model }} m
+where CAST(m.{{ column_name }} AS DECIMAL(38,2)) < 100.00
+{% endtest %}
+
 ```
 
-### DIM_ROCKETS Table
+## Data Quality Monitoring
 
-```yaml
-columns:
-  rocket_id:
-    source: source.rockets.id
-    transformation: direct copy
+### Volume Monitoring
 
-  rocket_name:
-    source: source.rockets.name
-    transformation: direct copy
-
-  rocket_type:
-    source: source.rockets.type
-    transformation: direct copy
-
-  height_meters:
-    source: source.rockets.height.meters
-    transformation: direct copy
-
-  cost_per_launch:
-    source: source.rockets.cost_per_launch
-    transformation: direct copy
+```sql
+-- Monitor daily record counts
+SELECT
+    DATE_TRUNC('day', launch_date_utc) as launch_date,
+    COUNT(*) as launch_count,
+    SUM(CASE WHEN success THEN 1 ELSE 0 END) as successful_launches
+FROM pbl_spacex_data_fct__launch_costs
+GROUP BY 1
+ORDER BY 1 DESC;
 ```
 
-## Key Transformation Rules
+### Data Freshness
 
-1. **ID Fields**
+```sql
+-- Check data freshness
+SELECT
+    MAX(launch_date_utc) as latest_launch,
+    DATEDIFF('hour', MAX(launch_date_utc), CURRENT_TIMESTAMP()) as hours_since_update
+FROM stg_spacex_data__launches;
+```
 
-   - All source IDs are converted to UUIDs in staging
-   - Relationships maintained through all layers
-   - New IDs generated for bridge tables
+### Referential Integrity
 
-2. **Date/Time Fields**
+```sql
+-- Verify all rockets exist
+SELECT
+    l.launch_id,
+    l.rocket_id
+FROM pbl_spacex_data_fct__launch_costs l
+LEFT JOIN pbl_spacex_data_dim__rockets r ON l.rocket_id = r.rocket_id
+WHERE r.rocket_id IS NULL;
+```
 
-   - All dates standardized to UTC in staging
-   - Timezone information preserved where relevant
-   - Additional date dimensions created in mart layer
+## Error Handling
 
-3. **Numeric Calculations**
+### Loading Errors
 
-   - Core counts aggregated from bridge tables
-   - Costs calculated with reusability factors
-   - Payload masses summed at launch level
-
-4. **Status Fields**
-
-   - Standardized to consistent values in staging
-   - Historical status tracking in dimension tables
-   - Current status maintained in fact tables
-
-5. **Naming Conventions**
-   - Source names preserved in staging
-   - Business names applied in mart layer
-   - Consistent suffixes for similar fields
-
-## Data Quality Checks
-
-1. **Referential Integrity**
-
-   ```sql
-   -- Example check for launch references
-   SELECT COUNT(*)
-   FROM fct_launches l
-   LEFT JOIN dim_rockets r ON l.rocket_id = r.rocket_id
-   WHERE r.rocket_id IS NULL;
-   ```
-
-2. **Completeness Checks**
-
-   ```sql
-   -- Example check for required fields
-   SELECT COUNT(*)
-   FROM fct_launches
-   WHERE launch_date_utc IS NULL
-      OR mission_name IS NULL;
-   ```
-
-3. **Business Rule Validation**
-   ```sql
-   -- Example check for cost calculations
-   SELECT COUNT(*)
-   FROM fct_launch_costs
-   WHERE estimated_launch_cost > base_launch_cost
-      OR cost_per_kg < 0;
-   ```
-
-## Usage Examples
-
-1. **Launch Success Analysis**
-
-   ```sql
-   SELECT
-       r.rocket_name,
-       COUNT(*) as total_launches,
-       SUM(CASE WHEN l.success THEN 1 ELSE 0 END) as successful_launches
-   FROM fct_launches l
-   JOIN dim_rockets r ON l.rocket_id = r.rocket_id
-   GROUP BY r.rocket_name;
-   ```
-
-2. **Cost Efficiency Analysis**
-   ```sql
-   SELECT
-       r.rocket_name,
-       AVG(lc.cost_per_kg) as avg_cost_per_kg,
-       COUNT(DISTINCT l.launch_id) as launch_count
-   FROM fct_launches l
-   JOIN fct_launch_costs lc ON l.launch_id = lc.launch_id
-   JOIN dim_rockets r ON l.rocket_id = r.rocket_id
-   GROUP BY r.rocket_name;
-   ```
+- Log to STG_SPACEX_DATA_LOAD_ERRORS table
+- Include error message, timestamp, and affected records
+- Alert on error thresholds

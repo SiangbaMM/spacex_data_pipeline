@@ -22,7 +22,7 @@ class LandpadsTap(SpaceXTapBase):
     def fetch_landpads(self) -> None:
         """Fetch and process landpads data from SpaceX API with \
             Snowflake-compatible schema."""
-        stream_name = "STG_SPACEX_DATA_LANDPADS"
+        stream_name = "STG_SPACEX_DATA_LANDPAD"
 
         try:
             # Fetch data from the landpads endpoint
@@ -133,7 +133,7 @@ class LandpadsTap(SpaceXTapBase):
                     continue  # Continue processing other landpad
 
             # Write state
-            state = {"STG_SPACEX_DATA_LANDPADS": {"last_sync": current_time_str}}
+            state = {"STG_SPACEX_DATA_LANDPAD": {"last_sync": current_time_str}}
             singer.write_state(state)
 
         except requests.exceptions.RequestException as api_error:

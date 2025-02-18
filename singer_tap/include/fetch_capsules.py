@@ -1,7 +1,6 @@
 import json
 
 import requests  # type: ignore
-import singer  # type: ignore
 
 from .spacex_tap_base import SpaceXTapBase
 
@@ -22,7 +21,8 @@ class CapsulesTap(SpaceXTapBase):
 
     def fetch_capsules(self) -> None:
         """Fetch and process capsules data."""
-        stream_name = "STG_SPACEX_DATA_CAPSULES"
+        stream_name = "STG_SPACEX_DATA_CAPSULE"
+        import singer  # type: ignore
 
         try:
             # Fetch data from API with rate limit handling

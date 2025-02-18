@@ -34,15 +34,7 @@ with roadster as
 	    video as roadster_video,
 	    flickr_images as roadster_flickr_images,
         created_at as roadster_created_at,
-	    updated_at as roadster_updated_at,
-	    raw_data as roadster_raw_data,
-	    _sdc_extracted_at as roadster_sdc_extracted_at,
-        _sdc_received_at as roadster_sdc_received_at,
-        _sdc_batched_at as roadster_sdc_batched_at,
-        _sdc_deleted_at as roadster_sdc_deleted_at,
-        _sdc_sequence as roadster_sdc_sequence,
-        _sdc_table_version as roadster_sdc_table_version,
-        _sdc_sync_started_at as roadster_sdc_sync_started_at
+	    raw_data as roadster_raw_data
 
     from {{ source('stg_spacex_data', 'stg_spacex_data_roadster') }}
 )

@@ -1,0 +1,47 @@
+version: 2
+
+sources:
+  - name: pbl_spacex_data
+    schema: PBL_SPACEX_DATA
+    tables:
+      - name: pbl_spacex_data_dim_capsule
+        description: Dragon capsule data and reuse dimension table
+
+      - name: pbl_spacex_data_dim_company
+        description: SpaceX company dimension table
+
+      - name: pbl_spacex_data_dim_core
+        description: Core data including reuse dimension table
+
+      - name: pbl_spacex_data_dim_crew
+        description: Crew member dimension table
+
+      - name: pbl_spacex_data_dim_dragon
+        description: Dragon spacecraft configurations dimension table
+
+      - name: pbl_spacex_data_dim_history
+        description: Historical events of SpaceX dimension table
+
+      - name: pbl_spacex_data_dim_landpad
+        description: Landing pad dimension table
+
+      - name: pbl_spacex_data_dim_launch
+        description: Raw launch data from SpaceX API dimension table
+
+      - name: pbl_spacex_data_dim_launchpad
+        description: Detailed launch site dimension table
+
+      - name: pbl_spacex_data_dim_payload
+        description: Payload dimension table for each launch dimension table
+
+      - name: pbl_spacex_data_dim_roadster
+        description: Elon Musk's Tesla Roadster dimension table
+
+      - name: pbl_spacex_data_dim_rocket
+        description: Rocket configurations and specifications dimension table
+
+      - name: pbl_spacex_data_dim_ship
+        description: Recovery ship dimension table
+
+      - name: pbl_spacex_data_dim_starlink
+        description: Starlink satellites dimension table
