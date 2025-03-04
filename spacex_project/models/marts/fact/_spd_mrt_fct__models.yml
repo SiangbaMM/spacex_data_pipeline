@@ -102,7 +102,7 @@ models:
           - dbt_utils.accepted_range:
               min_value: 7.0
               max_value: 8.0
-      - name: starlink_orbital_status
+      - name: orbital_status
         description: Status based on orbital height
         tests:
           - not_null
