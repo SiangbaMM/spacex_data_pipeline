@@ -15,7 +15,7 @@ with source_crew as (
 current_crew as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__crew') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_crew') }}
         where is_current
     {% else %}
         select null as crew_surrogate_key,

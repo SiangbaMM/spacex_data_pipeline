@@ -1,5 +1,8 @@
 name: run_sync_dev
 on: workflow_dispatch
+env:
+  ENVIRONMENT: dev
+
 jobs:
   first-job:
     runs-on: ubuntu-latest
@@ -8,3 +11,16 @@ jobs:
         run: |
           echo "Hello World !"
           echo "Journey start ..."
+
+      - name: Print result
+        env:
+          REPOSITORY: ${{ github.repository }}
+          SNOWFLAKE_ACCOUNT_ID: ${{ secrets.SNOWFLAKE_ACCOUNT_ID }}
+          SNOWFLAKE_USER_TRANSFORM_PASSWORD: ${{ secrets.SNOWFLAKE_USER_TRANSFORM_PASSWORD }}
+
+        shell: bash
+        run: |
+          echo $ENVIRONMENT
+          echo $REPOSITORY
+          echo $SNOWFLAKE_ACCOUNT_ID
+          echo $SNOWFLAKE_USER_TRANSFORM_PASSWORD

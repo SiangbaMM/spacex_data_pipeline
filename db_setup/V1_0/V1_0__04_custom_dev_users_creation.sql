@@ -21,9 +21,13 @@ set
     default_warehouse = 'spacex_data_dev_load_wh';
 
 --- Database
+use role spacex_data_dev_sysadmin;
+
 grant usage on database spacex_data_dev to role spacex_data_dev_load_role;
 
 -- spacex_data_dev_transform_user
+use role spacex_data_dev_secadmin;
+
 create user if not exists spacex_data_dev_transform_user password = '<must_change_password>' login_name = 'spacex_data_dev_transform_user' display_name = 'sp_transform_user' first_name = 'transform' middle_name = 'user' last_name = 'spacex data' must_change_password = true type = person comment = 'User for transformation workload';
 
 --- Role
@@ -44,4 +48,6 @@ set
     default_warehouse = 'spacex_data_dev_transform_wh';
 
 --- Database
+use role spacex_data_dev_sysadmin;
+
 grant usage on database spacex_data_dev to role spacex_data_dev_transform_role;

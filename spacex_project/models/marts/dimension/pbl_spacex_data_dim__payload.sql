@@ -15,7 +15,7 @@ with source_payload as (
 current_payload as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__payload') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_payload') }}
         where is_current
     {% else %}
         select null as payload_surrogate_key,

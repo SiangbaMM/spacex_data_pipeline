@@ -15,7 +15,7 @@ with source_launchpad as (
 current_launchpad as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__launchpad') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_launchpad') }}
         where is_current
     {% else %}
         select null as launchpad_surrogate_key,

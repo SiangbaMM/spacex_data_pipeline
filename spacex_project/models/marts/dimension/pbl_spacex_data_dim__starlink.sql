@@ -16,7 +16,7 @@ with source_starlink as (
 current_starlink as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__starlink') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_starlink') }}
         where is_current
     {% else %}
         select null as starlink_surrogate_key,

@@ -16,7 +16,7 @@ with source_ship as (
 current_ship as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__ship') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_ship') }}
         where is_current
     {% else %}
         select null as ship_surrogate_key,

@@ -15,7 +15,7 @@ with source_history as (
 current_history as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__history') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_history') }}
         where is_current
     {% else %}
         select null as history_surrogate_key,

@@ -15,7 +15,7 @@ with source_landpad as (
 current_landpad as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__landpad') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_landpad') }}
         where is_current
     {% else %}
         select null as landpad_surrogate_key,

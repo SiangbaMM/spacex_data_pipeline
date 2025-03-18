@@ -107,15 +107,3 @@ grant role _cmp_spd_dev_sr to role spacex_data_dev_load_role;
 
 --- spacex_data_dev_transform_role
 grant role _cmp_spd_dev_sfull to role spacex_data_dev_transform_role;
-
-revoke all grants on schema stg_spacex_data
-from
-    role _cmp_spd_dev_sr;
-
-revoke all grants on schema stg_spacex_data
-from
-    role _cmp_spd_dev_sw;
-
-revoke all grants on schema stg_spacex_data
-from
-    role _cmp_spd_dev_sfull;
