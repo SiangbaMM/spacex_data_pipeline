@@ -18,10 +18,11 @@ repos:
     - id: flake8
       args: [--max-line-length=88]
       additional_dependencies: [flake8-docstrings]
+      exclude: streamlit/*
 
 - repo: https://github.com/pycqa/isort
   rev: 5.12.0
   hooks:
     - id: isort
 
-exclude: '(.astro|dags)/*'
+exclude: '(.astro|dags|streamlit)/.* '

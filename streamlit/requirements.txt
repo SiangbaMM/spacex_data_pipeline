@@ -1,0 +1,7 @@
+streamlit>=1.22.0
+pandas>=1.5.0
+plotly>=5.14.0
+snowflake-connector-python>=3.0.0
+altair>=4.2.0
+python-dotenv>=1.0.0
+typing-extensions>=4.0.0  # For Python < 3.10 compatibility
