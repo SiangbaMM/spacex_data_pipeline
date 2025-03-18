@@ -16,7 +16,7 @@ with source_rocket as (
 current_rocket as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__rocket') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_rocket') }}
         where is_current
     {% else %}
         select null as rocket_surrogate_key,

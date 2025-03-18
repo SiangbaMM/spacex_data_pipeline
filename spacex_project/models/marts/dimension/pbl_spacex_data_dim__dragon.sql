@@ -15,7 +15,7 @@ with source_dragon as (
 current_dragon as (
     {% if adapter.get_relation(this.database, schema_name, this.table) is not none %}
         select *
-        from {{ ref('pbl_spacex_data_dim__dragon') }}
+        from {{ source('pbl_spacex_data', 'pbl_spacex_data_dim_dragon') }}
         where is_current
     {% else %}
         select null as dragon_surrogate_key,

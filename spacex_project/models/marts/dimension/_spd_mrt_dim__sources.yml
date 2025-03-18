@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: pbl_spacex_data
-    schema: PBL_SPACEX_DATA
+    schema: pbl_spacex_data
     tables:
       - name: pbl_spacex_data_dim_capsule
         description: Dragon capsule data and reuse dimension table
