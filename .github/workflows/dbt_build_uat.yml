@@ -1,0 +1,65 @@
+name: DBT Build UAT
+on:
+  push:
+    branches:
+      - uat
+    paths:
+      - "spacex_project/**"
+
+jobs:
+  dbt_build:
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: uat
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
+      - name: Install dbt dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_dbt.txt
+
+      - name: Create profiles.yml with environment variables
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_ID }}
+          SNOWFLAKE_USER: ${{ secrets.SPACEX_DATA_UAT_TRANSFORM_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SPACEX_DATA_UAT_TRANSFORM_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ vars.SPACEX_DATA_UAT_TRANSFORM_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ vars.SPACEX_DATA_UAT_TRANSFORM_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ vars.SPACEX_DATA_UAT_DATABASE }}
+          SNOWFLAKE_SCHEMA: ${{ vars.SPACEX_DATA_UAT_SCHEMA }}
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << EOF
+          spacex_project:
+            target: uat_ci
+            outputs:
+              uat_ci:
+                type: snowflake
+                account: $SNOWFLAKE_ACCOUNT
+                user: $SNOWFLAKE_USER
+                password: $SNOWFLAKE_PASSWORD
+                role: $SNOWFLAKE_ROLE
+                database: $SNOWFLAKE_DATABASE
+                warehouse: $SNOWFLAKE_WAREHOUSE
+                schema: $SNOWFLAKE_SCHEMA
+                threads: 4
+          EOF
+
+      - name: Run dbt unit tests
+        run: |
+          cd spacex_project
+          dbt test -s unit
+
+      - name: Run dbt build
+        run: |
+          cd spacex_project
+          dbt build --target uat_ci
