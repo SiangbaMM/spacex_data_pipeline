@@ -51,7 +51,7 @@ jobs:
               'schema': os.environ['SNOWFLAKE_SCHEMA']
           }
 
-          with open('include/singer_tap/runner/config_snowflake.json', 'w') as f:
+          with open('include/singer_tap/runner/config_snowflake.json', 'w+') as f:
               json.dump(config, f)
           "
 
