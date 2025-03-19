@@ -58,8 +58,8 @@ jobs:
           "
 
           # Run the Singer tap to extract and load data
-          cd singer_tap
-          python -m spacex_tap
+          cd singer_tap/runner
+          python tap_spacex_runner.py
 
       - name: Run Singer tap tests
         run: |
