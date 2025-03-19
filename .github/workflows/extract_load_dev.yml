@@ -26,10 +26,6 @@ jobs:
           pip install -r requirements_singer.txt
           pip install -e ./singer_tap/
 
-      - name: Run Singer tap tests
-        run: |
-          pytest tests/
-
       - name: Extract and Load to Snowflake
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_ID }}
@@ -62,3 +58,7 @@ jobs:
           # Run the Singer tap to extract and load data
           cd singer_tap
           python -m spacex_tap
+
+      - name: Run Singer tap tests
+        run: |
+          pytest tests/
