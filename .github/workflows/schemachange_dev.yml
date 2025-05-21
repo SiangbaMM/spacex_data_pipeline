@@ -6,6 +6,9 @@ on:
     paths:
       - "db_setup/**"
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   schemachange:
     runs-on: ubuntu-latest
@@ -24,6 +27,9 @@ jobs:
 
       - name: Install schemachange
         run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          python --version
+          echo "Step 1: Installing schemachange"
           python -m pip install --upgrade pip
           pip install schemachange
 
@@ -38,8 +44,9 @@ jobs:
           SNOWFLAKE_SCHEMA: ${{ vars.SPACEX_DATA_DEV_SCHEMA }}
         run: |
           # Run schemachange to apply database changes
+          echo "Step 2: Running schemachange"
           schemachange \
-            --config-folder db_setup \
+            --config-folder $GITHUB_WORKSPACE/db_setup \
             --snowflake-account $SNOWFLAKE_ACCOUNT \
             --snowflake-user $SNOWFLAKE_USER \
             --snowflake-password $SNOWFLAKE_PASSWORD \

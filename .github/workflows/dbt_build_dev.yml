@@ -1,14 +1,19 @@
 name: DBT Build DEV
 on:
-  push:
+  workflow_run:
+    workflows: ["Schemachange DEV", "Extract and Load DEV"]
+    types:
+      - completed
     branches:
       - dev
-    paths:
-      - "spacex_project/**"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   dbt_build:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     env:
       ENVIRONMENT: dev
     steps:
@@ -40,9 +45,9 @@ jobs:
           mkdir -p ~/.dbt
           cat > ~/.dbt/profiles.yml << EOF
           spacex_project:
-            target: dev_ci
+            target: dev_live
             outputs:
-              dev_ci:
+              dev_live:
                 type: snowflake
                 account: $SNOWFLAKE_ACCOUNT
                 user: $SNOWFLAKE_USER
@@ -57,9 +62,9 @@ jobs:
       - name: Run dbt unit tests
         run: |
           cd spacex_project
-          dbt test -s unit
+          dbt test --target dev_live
 
-      - name: Run dbt build
+      - name: Run dbt run
         run: |
           cd spacex_project
-          dbt build --target dev_ci
+          dbt run --target dev_live
