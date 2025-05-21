@@ -10,7 +10,7 @@ jobs:
   schemachange:
     runs-on: ubuntu-latest
     env:
-      ENVIRONMENT: uat
+      ENVIRONMENT: dev
     steps:
       - uses: actions/checkout@v3
         with:
@@ -24,21 +24,26 @@ jobs:
 
       - name: Install schemachange
         run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          python --version
+          echo "Step 1: Installing schemachange"
           python -m pip install --upgrade pip
           pip install schemachange
 
       - name: Run schemachange
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_ID }}
-          SNOWFLAKE_USER: ${{ secrets.SPACEX_DATA_UAT_CICD_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SPACEX_DATA_UAT_CICD_PASSWORD }}
-          SNOWFLAKE_ROLE: ${{ vars.SPACEX_DATA_UAT_CICD_ROLE }}
-          SNOWFLAKE_WAREHOUSE: ${{ vars.SPACEX_DATA_UAT_CICD_WAREHOUSE }}
-          SNOWFLAKE_DATABASE: ${{ vars.SPACEX_DATA_UAT_DATABASE }}
+          SNOWFLAKE_USER: ${{ secrets.SPACEX_DATA_DEV_CICD_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SPACEX_DATA_DEV_CICD_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ vars.SPACEX_DATA_DEV_CICD_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ vars.SPACEX_DATA_DEV_CICD_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ vars.SPACEX_DATA_DEV_DATABASE }}
+          SNOWFLAKE_SCHEMA: ${{ vars.SPACEX_DATA_DEV_SCHEMA }}
         run: |
           # Run schemachange to apply database changes
+          echo "Step 2: Running schemachange"
           schemachange \
-            --config-folder db_setup \
+            --config-folder $GITHUB_WORKSPACE/db_setup \
             --snowflake-account $SNOWFLAKE_ACCOUNT \
             --snowflake-user $SNOWFLAKE_USER \
             --snowflake-password $SNOWFLAKE_PASSWORD \

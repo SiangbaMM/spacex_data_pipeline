@@ -4,6 +4,9 @@ on:
     branches:
       - dev
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   extract_load:
     runs-on: ubuntu-latest
@@ -58,9 +61,12 @@ jobs:
           "
 
           # Run the Singer tap to extract and load data
-          cd singer_tap/runner
-          python tap_spacex_runner.py
+
+          cd singer_tap
+          python runner/tap_spacex_runner.py
+
 
       - name: Run Singer tap tests
         run: |
           pytest tests/
+
