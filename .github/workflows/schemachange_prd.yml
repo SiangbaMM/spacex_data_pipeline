@@ -13,8 +13,7 @@ on:
 jobs:
   schemachange:
     runs-on: ubuntu-latest
-    env:
-      ENVIRONMENT: prd
+    environment: prd
     steps:
       - uses: actions/checkout@v3
         with:
@@ -43,7 +42,7 @@ jobs:
           SNOWFLAKE_WAREHOUSE: ${{ vars.SPACEX_DATA_PRD_CICD_WAREHOUSE }}
           SNOWFLAKE_DATABASE: ${{ vars.SPACEX_DATA_PRD_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ vars.SPACEX_DATA_PRD_SCHEMA }}
-          ENVIRONMENT: prd
+
         run: |
           # Run schemachange to apply database changes
           echo "Step 2: Running schemachange with config file for PRODUCTION"
