@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - "singer_tap/**"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

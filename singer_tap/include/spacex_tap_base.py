@@ -176,12 +176,12 @@ class SpaceXTapBase:
             SnowflakeError: If truncate operation fails
         """
         try:
-            cursor = self.conn.cursor()
+            cur = self.conn.cursor()
             # Log truncate operation
             singer.get_logger().info(f"Truncating table {table_name}")
 
             # Execute truncate
-            cursor.execute(f"TRUNCATE TABLE {table_name}")
+            cur.execute(f"TRUNCATE TABLE {table_name}")
             self.conn.commit()
 
             # Mark table as truncated
@@ -194,7 +194,7 @@ class SpaceXTapBase:
             self.log_error(table_name, error_msg)
             raise
         finally:
-            cursor.close()
+            cur.close()
 
     def insert_into_snowflake(self, stream_name: str, record: Dict) -> None:
         """Buffer a record for bulk insert into Snowflake.

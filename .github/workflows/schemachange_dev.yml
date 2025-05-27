@@ -42,16 +42,21 @@ jobs:
           SNOWFLAKE_WAREHOUSE: ${{ vars.SPACEX_DATA_DEV_CICD_WAREHOUSE }}
           SNOWFLAKE_DATABASE: ${{ vars.SPACEX_DATA_DEV_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ vars.SPACEX_DATA_DEV_SCHEMA }}
+          ENVIRONMENT: DEV
         run: |
           # Run schemachange to apply database changes
-          echo "Step 2: Running schemachange"
-          schemachange \
-            --config-folder $GITHUB_WORKSPACE/db_setup \
-            --snowflake-account $SNOWFLAKE_ACCOUNT \
-            --snowflake-user $SNOWFLAKE_USER \
-            --snowflake-password $SNOWFLAKE_PASSWORD \
-            --snowflake-role $SNOWFLAKE_ROLE \
-            --snowflake-warehouse $SNOWFLAKE_WAREHOUSE \
-            --snowflake-database $SNOWFLAKE_DATABASE \
+          echo "Step 2: Running schemachange with config file"
+          export SNOWFLAKE_PASSWORD=$SNOWFLAKE_PASSWORD
+          export SNOWFLAKE_DATABASE=$SNOWFLAKE_DATABASE
+
+          schemachange deploy \
+            -f $GITHUB_WORKSPACE/db_setup \
+            --config-file $GITHUB_WORKSPACE/db_setup/schemachange-config.yml \
+            -a $SNOWFLAKE_ACCOUNT \
+            -u $SNOWFLAKE_USER \
+            -r $SNOWFLAKE_ROLE \
+            -w $SNOWFLAKE_WAREHOUSE \
+            -d $SNOWFLAKE_DATABASE \
+            -c ${SNOWFLAKE_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table \
             --verbose
