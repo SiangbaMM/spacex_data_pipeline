@@ -13,7 +13,7 @@ jobs:
   schemachange:
     runs-on: ubuntu-latest
     env:
-      ENVIRONMENT: dev
+      environment: dev
     steps:
       - uses: actions/checkout@v3
         with:
@@ -42,7 +42,7 @@ jobs:
           SNOWFLAKE_WAREHOUSE: ${{ vars.SPACEX_DATA_DEV_CICD_WAREHOUSE }}
           SNOWFLAKE_DATABASE: ${{ vars.SPACEX_DATA_DEV_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ vars.SPACEX_DATA_DEV_SCHEMA }}
-          ENVIRONMENT: DEV
+          ENVIRONMENT: $environment
         run: |
           # Run schemachange to apply database changes
           echo "Step 2: Running schemachange with config file"
