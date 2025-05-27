@@ -30,10 +30,8 @@ jobs:
           pip install pytest
           pip install -r requirements_singer.txt
           pip install -e ./singer_tap/
-
-      - name: Run Singer tap tests
-        run: |
-          pytest tests/
+          cd singer_tap/runner
+          touch config_snowflake.json
 
       - name: Extract and Load to Snowflake
         env:
@@ -60,10 +58,17 @@ jobs:
               'schema': os.environ['SNOWFLAKE_SCHEMA']
           }
 
-          with open('include/singer_tap/runner/config_snowflake.json', 'w') as f:
+          with open('singer_tap/runner/config_snowflake.json', 'w+') as f:
               json.dump(config, f)
           "
 
           # Run the Singer tap to extract and load data
+
           cd singer_tap
           python runner/tap_spacex_runner.py
+
+
+      - name: Run Singer tap tests
+        run: |
+          pytest tests/
+
