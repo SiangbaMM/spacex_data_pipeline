@@ -221,7 +221,7 @@ class SpaceXTapBase:
     def log_error(
         self, table_name: str, error_message: str, error_data: Dict = {}
     ) -> None:
-        """Log error to Snowflake STG_SPACEX_DATA_LOAD_ERRORS table."""
+        """Error logging to Snowflake STG_SPACEX_DATA_LOAD_ERRORS table."""
         try:
             cursor = self.conn.cursor()
             error_time = datetime.now(pytz.UTC).isoformat()
