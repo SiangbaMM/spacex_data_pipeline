@@ -61,9 +61,9 @@ jobs:
       - name: Run dbt unit tests
         run: |
           cd spacex_project
-          dbt test --target dev_live
+          dbt test --target dev_live --profiles-dir ~/.dbt
 
       - name: Run dbt run
         run: |
           cd spacex_project
-          dbt run --target dev_live
+          dbt run --target dev_live --profiles-dir ~/.dbt
