@@ -58,6 +58,8 @@ jobs:
                 threads: 4
           EOF
 
+          cat ~/.dbt/profiles.yml
+
       - name: Run dbt unit tests
         run: |
           cd spacex_project
