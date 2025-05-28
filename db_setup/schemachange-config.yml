@@ -1,0 +1,9 @@
+# Configuration schemachange pour le projet SpaceX Data
+config-version: 1
+
+
+# Configuration du changelog
+change-history-table:
+  database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+  schema: "CHANGE_HISTORY"
+  table: "CHANGE_HISTORY_TABLE"
